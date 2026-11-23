@@ -2713,6 +2713,7 @@ version = "0.1.0"
 dependencies = [
  "ootle-rs",
  "serde_json",
+ "sha2",
  "tari_ootle_transaction",
  "tokio",
  "ureq",

@@ -18,6 +18,25 @@ tacita is a tari ootle template for campaign and treasury payouts. each winner's
 6. nothing is paid out in the clear
 7. the amount taken from the vault equals the announced round total
 
+## use
+
+tacita talks to your own ootle wallet (walletd). the wallet signs and pays the fee; tacita never sees your keys.
+
+1. in the wallet, open **API Keys** and create a key. in a terminal: `set TACITA_API_KEY=tw_...` (windows) or `export TACITA_API_KEY=tw_...`
+2. `tacita doctor` checks the connection.
+3. write a winners file, one `address,amount` per line (amounts in TARI, at most 16 lines):
+   ```
+   # round 1
+   otl_1abc...,1.5
+   otl_1def...,0.75
+   ```
+4. `tacita check --winners winners.csv` prints the total, headcount and manifest root.
+5. `tacita create --template <template address> --name "round 1" --winners winners.csv` locks the total in a new campaign.
+6. `tacita pay --campaign <component address> --winners winners.csv` pays everyone in one transaction, amounts hidden.
+7. `tacita close --campaign <component address>` returns anything left.
+
+add `--dry-run` to any command to see the transaction without sending it.
+
 ## build
 
 ```
