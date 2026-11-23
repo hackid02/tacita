@@ -44,3 +44,11 @@ in rounded cards, a centered hero over three feature cards, scroll effects, buzz
   110 characters with no break points.
 - words: lowercase, plain, no hype, no em dashes. say what it proves and what it doesn't,
   including the limits.
+
+## visuals (added after "too plain" feedback)
+- avoiding slop is half the job. every section needs one thing the eye goes to first,
+  and it must show the product, not decorate it.
+- hero: an example round where amounts get redacted one by one, then the seal stamps
+  down with the fingerprint (7s loop, static final state for reduced motion).
+- a full-bleed ink band contrasts "what the organiser holds" with "what the chain shows".
+- the terminal shows real cli output only. no "accepted" until a real mainnet run exists.

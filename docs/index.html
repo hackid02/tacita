@@ -131,6 +131,84 @@
     .ledger div { grid-template-columns: 1fr; gap: 2px; }
     .top nav a.hide-sm { display: none; }
   }
+
+  /* ---------- hero with the sealing visual ---------- */
+  .hero { grid-template-columns: 6fr 6fr; gap: 64px; align-items: center; padding: 64px 0 64px; }
+  .hero h1 { font-size: clamp(var(--s5), 4.6vw, 52px); }
+  .hero > * { min-width: 0; }
+  .sheet .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .hero .lede { color: var(--soft); font-size: var(--s3); line-height: 1.5; margin: 20px 0 28px; max-width: 30em; text-wrap: pretty; }
+  .cta { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+  .btn { font: 500 15px var(--mono); background: var(--ink); color: var(--paper); border-radius: 2px; padding: 12px 20px; text-decoration: none; transition: transform 160ms var(--ease-out); }
+  .btn:active { transform: scale(0.97); }
+  .cta .ghost { font: 15px var(--mono); }
+  @media (hover: hover) and (pointer: fine) { .btn:hover { background: var(--seal); } }
+
+  .sheet { position: relative; background: var(--well); padding: 26px 28px 24px; font: 14px/1 var(--mono); box-shadow: 0 1px 0 var(--rule), 0 24px 48px -28px rgba(22, 19, 15, 0.35); }
+  .sheet header { display: flex; justify-content: space-between; color: var(--soft); font-size: 12px; letter-spacing: 0.04em; padding-bottom: 14px; border-bottom: 1px solid var(--ink); }
+  .sheet .r { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--rule); align-items: center; }
+  .sheet .who { color: var(--ink); }
+  .sheet .who small { color: var(--soft); font-size: 12px; margin-left: 8px; }
+  .sheet .amt { position: relative; min-width: 92px; text-align: right; color: var(--ink); }
+  .sheet .amt i { font-style: normal; display: inline-block; animation: hush 7s var(--ease-out) infinite; animation-delay: calc(var(--i) * 0.32s); }
+  .sheet .amt::after { content: ""; position: absolute; inset: -3px -4px; background: var(--ink); transform-origin: left; transform: scaleX(0); animation: redact 7s var(--ease-out) infinite; animation-delay: calc(var(--i) * 0.32s); }
+  .sheet .foot { display: grid; grid-template-columns: 1fr auto; padding-top: 16px; gap: 12px; align-items: end; }
+  .sheet .foot span { color: var(--soft); font-size: 12px; display: block; margin-bottom: 6px; letter-spacing: 0.04em; }
+  .sheet .total { font-size: 18px; }
+  .sheet .fp { color: var(--seal); font-size: 12px; overflow-wrap: anywhere; line-height: 1.5; opacity: 0; animation: fpin 7s var(--ease-out) infinite; }
+  .stamp { position: absolute; right: -26px; top: -30px; width: 112px; height: 112px; opacity: 0; animation: stamp 7s var(--ease-out) infinite; filter: drop-shadow(0 6px 10px rgba(194, 54, 29, 0.25)); }
+  .stamp img { width: 100%; height: 100%; display: block; transform: rotate(-12deg); }
+  @keyframes redact { 0%, 6% { transform: scaleX(0); } 14%, 84% { transform: scaleX(1); } 92%, 100% { transform: scaleX(0); } }
+  @keyframes hush { 0%, 6% { filter: blur(0); } 12%, 86% { filter: blur(3px); } 92%, 100% { filter: blur(0); } }
+  @keyframes stamp { 0%, 44% { opacity: 0; transform: scale(1.35); } 50% { opacity: 1; transform: scale(0.96); } 54%, 84% { opacity: 1; transform: scale(1); } 92%, 100% { opacity: 0; transform: scale(1); } }
+  @keyframes fpin { 0%, 50% { opacity: 0; } 58%, 84% { opacity: 1; } 92%, 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet .amt i, .sheet .amt::after, .stamp, .sheet .fp { animation: none; }
+    .sheet .amt::after { transform: scaleX(1); }
+    .stamp, .sheet .fp { opacity: 1; }
+  }
+
+  /* ---------- two views: a full-bleed ink band ---------- */
+  .band { margin: 0 calc(50% - 50vw); background: #16130f; color: #eeebe5; padding: 88px 0 92px; }
+  .band .wrap { max-width: 1040px; }
+  .band .label { color: #a59f95; }
+  .band h2 { font-size: var(--s5); line-height: 1.15; margin: 12px 0 0; max-width: 18em; }
+  .band h2 em { color: #e0533a; font-style: italic; }
+  .views { display: grid; grid-template-columns: 1fr 72px 1fr; margin-top: 48px; align-items: stretch; }
+  .view h3 { font: 13px var(--caps); letter-spacing: 0.16em; text-transform: uppercase; color: #a59f95; font-weight: 400; margin: 0 0 14px; }
+  .view .r { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 12px 0; border-bottom: 1px solid #34302a; font: 14px var(--mono); }
+  .view .r:first-of-type { border-top: 1px solid #eeebe5; }
+  .view .r b { font-weight: 400; }
+  .view .muted { color: #a59f95; }
+  .view .bar { display: inline-block; width: 74px; height: 12px; background: #34302a; vertical-align: middle; }
+  .view .sum { border-bottom: 0; padding-top: 16px; }
+  .view .sum .red { color: #e0533a; font-size: 12px; }
+  .bridge { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #a59f95; font: 12px var(--mono); }
+  .bridge::before, .bridge::after { content: ""; width: 1px; flex: 1; background: #34302a; }
+  .bridge img { width: 34px; height: 34px; }
+  .note { margin-top: 28px; color: #a59f95; font-size: var(--s1); max-width: 40em; }
+
+  /* ---------- terminal ---------- */
+  .run { padding: 64px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 4fr 8fr; gap: 56px; align-items: start; }
+  .run .side p { color: var(--soft); margin: 0 0 12px; }
+  .term { background: #16130f; color: #d9d4cb; font: 13px/1.7 var(--mono); border-radius: 4px; overflow: hidden; box-shadow: 0 24px 48px -28px rgba(22, 19, 15, 0.45); }
+  .term .bar { padding: 10px 16px; border-bottom: 1px solid #34302a; color: #7d776d; font-size: 12px; display: flex; justify-content: space-between; }
+  .term pre { margin: 0; padding: 18px 20px 22px; overflow-x: auto; white-space: pre; }
+  .term .p { color: #7d776d; }
+  .term .c { color: #eeebe5; }
+  .term .ok { color: #6cc48f; }
+  .term .fp { color: #e0533a; }
+
+  @media (max-width: 820px) {
+    .views { grid-template-columns: 1fr; gap: 0; }
+    .bridge { flex-direction: row; padding: 22px 0; }
+    .bridge::before, .bridge::after { width: auto; height: 1px; }
+    .run { grid-template-columns: 1fr; gap: 22px; padding: 44px 0; }
+    .band { padding: 64px 0; }
+    .stamp { right: -6px; top: -36px; width: 88px; height: 88px; }
+  }
+  @media (max-width: 820px) { .hero { grid-template-columns: 1fr; gap: 48px; padding: 40px 0 48px; } .sheet { margin-right: 14px !important; } }
+  @media (max-width: 560px) { .band .wrap { padding: 0 20px; } .sheet { padding: 22px 18px 20px; } }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -141,15 +219,29 @@
       <source srcset="brand/tacita-logo-dark.svg" media="(prefers-color-scheme: dark)">
       <img src="brand/tacita-logo.svg" alt="tacita" width="106" height="28">
     </picture>
-    <nav><a href="#check">check a list</a><a class="hide-sm" href="#how">how it works</a><a href="https://github.com/hackid02/tacita">source</a></nav>
+    <nav><a href="#check">check a list</a><a class="hide-sm" href="#views">two views</a><a class="hide-sm" href="#how">how it works</a><a href="https://github.com/hackid02/tacita">source</a></nav>
   </header>
 
   <section class="hero">
     <div>
       <div class="label">private payouts on tari ootle</div>
       <h1>pay the whole round privately. <em>let anyone check it was fair.</em></h1>
+      <p class="lede">built for bounty and ambassador rounds. nobody sees who got how much, and everyone can check the winners list wasn't changed after it was locked.</p>
+      <div class="cta"><a class="btn" href="#check">check a list</a><a class="ghost" href="#views">see what the chain sees</a></div>
     </div>
-    <p>built for bounty and ambassador rounds. nobody sees who got how much, and everyone can check the winners list wasn't changed after it was locked.</p>
+    <figure class="sheet" aria-label="an example round: five winners whose amounts get hidden, then the round is sealed with a fingerprint" style="margin:0">
+      <header><span>EXAMPLE ROUND · 5 AMBASSADORS</span></header>
+      <div class="r"><span class="who">@kemi <small>otl_1cscp…dxq</small></span><span class="amt" style="--i:0"><i>1.50</i></span></div>
+      <div class="r"><span class="who">@tolu <small>otl_15gsu…9g</small></span><span class="amt" style="--i:1"><i>0.75</i></span></div>
+      <div class="r"><span class="who">@sam <small>otl_1s38t…uu</small></span><span class="amt" style="--i:2"><i>2.00</i></span></div>
+      <div class="r"><span class="who">@lina <small>otl_1x7qe…k4</small></span><span class="amt" style="--i:3"><i>0.40</i></span></div>
+      <div class="r"><span class="who">@obi <small>otl_1m2wd…ra</small></span><span class="amt" style="--i:4"><i>0.35</i></span></div>
+      <div class="foot">
+        <div><span>LOCKED FINGERPRINT</span><div class="fp">143c8a9cc3b5955d931a9e25c1fdf2c662cadcb91658bbe4e1c6e499c2612ba1</div></div>
+        <div style="text-align:right"><span>TOTAL</span><div class="total">5.00 TARI</div></div>
+      </div>
+      <div class="stamp" aria-hidden="true"><img src="brand/tacita-mark.svg" alt=""></div>
+    </figure>
   </section>
 
   <div class="facts">
@@ -157,6 +249,36 @@
     <div><b>total</b><span>is the only amount made public, never each share</span></div>
     <div><b>1</b><span>fingerprint locks the list before payout</span></div>
   </div>
+
+  <section class="band" id="views" aria-labelledby="views-h">
+    <div class="wrap">
+      <div class="label">two views of the same round</div>
+      <h2 id="views-h">you see the list. the chain sees <em>only what it needs</em> to prove it was paid right.</h2>
+      <div class="views">
+        <div class="view">
+          <h3>what the organiser holds</h3>
+          <div class="r"><b>@kemi</b><span>1.50</span></div>
+          <div class="r"><b>@tolu</b><span>0.75</span></div>
+          <div class="r"><b>@sam</b><span>2.00</span></div>
+          <div class="r"><b>@lina</b><span>0.40</span></div>
+          <div class="r"><b>@obi</b><span>0.35</span></div>
+          <div class="r sum"><span class="muted">total</span><span>5.00 TARI</span></div>
+        </div>
+        <div class="bridge" aria-hidden="true"><img src="brand/tacita-mark.svg" alt=""><span>sealed</span></div>
+        <div class="view">
+          <h3>what the chain shows</h3>
+          <div class="r"><span class="muted">hidden output 1</span><span class="bar"></span></div>
+          <div class="r"><span class="muted">hidden output 2</span><span class="bar"></span></div>
+          <div class="r"><span class="muted">hidden output 3</span><span class="bar"></span></div>
+          <div class="r"><span class="muted">hidden output 4</span><span class="bar"></span></div>
+          <div class="r"><span class="muted">hidden output 5</span><span class="bar"></span></div>
+          <div class="r sum"><span class="muted">total, locked before payout</span><span>5.00 TARI</span></div>
+          <div class="r sum" style="padding-top:4px"><span class="muted">list fingerprint</span><span class="red">143c8a9c…612ba1</span></div>
+        </div>
+      </div>
+      <p class="note">each hidden output can only be opened by its winner. the contract checks that the outputs add up to the locked total and that there's exactly one per winner, so nobody can be skipped or quietly paid more.</p>
+    </div>
+  </section>
 
   <section class="tool" id="check" aria-labelledby="check-h">
     <div class="side">
@@ -190,6 +312,31 @@
         <div class="row"><button id="compare">compare</button></div>
         <div id="cmp" class="msg" role="status"></div>
       </div>
+    </div>
+  </section>
+
+  <section class="run" aria-labelledby="run-h">
+    <div class="side">
+      <div class="label">the tool</div>
+      <h2 id="run-h">one command pays the round.</h2>
+      <p>tacita is a small command line tool. it talks to your own ootle wallet, which signs and pays the fee. tacita never sees your keys.</p>
+      <p>add <code>--dry-run</code> to see the transaction before anything is sent.</p>
+    </div>
+    <div class="term" role="img" aria-label="terminal output of tacita check and tacita pay">
+      <div class="bar"><span>tacita</span><span>real output · sample round</span></div>
+<pre><span class="p">&gt;</span> <span class="c">tacita check --winners sample.csv</span>
+winners:       3
+total:         4.25 TARI
+manifest root: <span class="fp">143c8a9cc3b5955d931a9e25c1fdf2c662cadcb91658bbe4e1c6e499c2612ba1</span>
+
+<span class="ok">ok: the winners file is valid.</span>
+
+<span class="p">&gt;</span> <span class="c">tacita pay --campaign component_5286…fe36 --winners sample.csv --dry-run</span>
+winners:       3
+total:         4.25 TARI
+manifest root: <span class="fp">143c8a9cc3b5955d931a9e25c1fdf2c662cadcb91658bbe4e1c6e499c2612ba1</span>
+<span class="ok">hidden payout built and checked: 3 outputs, nothing revealed.</span>
+[ { "CallMethod": { "method": "pay", "args": [ { "Literal": "8482801a…" } ] } } ]</pre>
     </div>
   </section>
 
