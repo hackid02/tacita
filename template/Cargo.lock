@@ -1275,14 +1275,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hush"
-version = "0.1.0"
-dependencies = [
- "tari_template_lib",
- "tari_template_test_tooling",
-]
-
-[[package]]
 name = "hybrid-array"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2790,6 +2782,14 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.10",
+]
+
+[[package]]
+name = "tacita"
+version = "0.1.0"
+dependencies = [
+ "tari_template_lib",
+ "tari_template_test_tooling",
 ]
 
 [[package]]

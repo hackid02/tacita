@@ -1151,17 +1151,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "15cdd26707701c53297e2fa6afb323d55fbc1d0810c3aec078ae3ef0424c3c15"
 
 [[package]]
-name = "hush-cli"
-version = "0.1.0"
-dependencies = [
- "ootle-rs",
- "serde_json",
- "tari_ootle_transaction",
- "tokio",
- "ureq",
-]
-
-[[package]]
 name = "hybrid-array"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2716,6 +2705,17 @@ checksum = "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4"
 dependencies = [
  "core-foundation-sys",
  "libc",
+]
+
+[[package]]
+name = "tacita-cli"
+version = "0.1.0"
+dependencies = [
+ "ootle-rs",
+ "serde_json",
+ "tari_ootle_transaction",
+ "tokio",
+ "ureq",
 ]
 
 [[package]]

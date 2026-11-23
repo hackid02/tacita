@@ -1,4 +1,4 @@
-//! Builds the hidden payout statement that the hush template's `pay` method checks.
+//! Builds the hidden payout statement that the tacita template's `pay` method checks.
 
 use std::num::NonZeroU64;
 

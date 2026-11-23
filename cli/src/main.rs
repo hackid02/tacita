@@ -9,18 +9,18 @@ const DEFAULT_WALLETD_URL: &str = "http://127.0.0.1:5100/json_rpc";
 
 fn usage() -> ! {
     eprintln!(
-        "hush: private campaign payouts on tari ootle\n\n\
-         usage:\n  hush doctor     check the connection to your ootle wallet\n\n\
-         settings (environment variables):\n  HUSH_API_KEY    api key from the wallet's 'API Keys' page (required)\n  \
-         HUSH_WALLETD    wallet json-rpc url (default {DEFAULT_WALLETD_URL})"
+        "tacita: private campaign payouts on tari ootle\n\n\
+         usage:\n  tacita doctor     check the connection to your ootle wallet\n\n\
+         settings (environment variables):\n  TACITA_API_KEY    api key from the wallet's 'API Keys' page (required)\n  \
+         TACITA_WALLETD    wallet json-rpc url (default {DEFAULT_WALLETD_URL})"
     );
     std::process::exit(2)
 }
 
 fn walletd() -> walletd::Walletd {
-    let url = env::var("HUSH_WALLETD").unwrap_or_else(|_| DEFAULT_WALLETD_URL.to_string());
-    let key = env::var("HUSH_API_KEY").unwrap_or_else(|_| {
-        eprintln!("HUSH_API_KEY is not set. create a key on the wallet's 'API Keys' page first.");
+    let url = env::var("TACITA_WALLETD").unwrap_or_else(|_| DEFAULT_WALLETD_URL.to_string());
+    let key = env::var("TACITA_API_KEY").unwrap_or_else(|_| {
+        eprintln!("TACITA_API_KEY is not set. create a key on the wallet's 'API Keys' page first.");
         std::process::exit(2)
     });
     walletd::Walletd::new(url, key)
@@ -34,7 +34,7 @@ fn doctor() -> Result<(), String> {
     println!("accounts: {}", accounts);
     let balances = w.call("accounts.get_balances", json!({ "account": null, "refresh": true }))?;
     println!("balances: {}", balances);
-    println!("\nok: hush can talk to your wallet.");
+    println!("\nok: tacita can talk to your wallet.");
     Ok(())
 }
 

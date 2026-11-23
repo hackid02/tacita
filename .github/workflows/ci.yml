@@ -25,8 +25,8 @@ jobs:
       - name: upload wasm
         uses: actions/upload-artifact@v4
         with:
-          name: hush-template-wasm
-          path: template/target/wasm32-unknown-unknown/release/hush.wasm
+          name: tacita-template-wasm
+          path: template/target/wasm32-unknown-unknown/release/tacita.wasm
 
   cli:
     runs-on: ubuntu-latest
@@ -53,10 +53,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: cli
-      - name: build hush.exe
+      - name: build tacita.exe
         run: cargo build --release
-      - name: upload hush.exe
+      - name: upload tacita.exe
         uses: actions/upload-artifact@v4
         with:
-          name: hush-windows
-          path: cli/target/release/hush.exe
+          name: tacita-windows
+          path: cli/target/release/tacita.exe

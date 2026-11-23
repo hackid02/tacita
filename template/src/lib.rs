@@ -1,4 +1,4 @@
-//! hush: private campaign payouts on Tari Ootle.
+//! tacita: private campaign payouts on Tari Ootle.
 //!
 //! A campaign holds a public total, a public number of winners and a manifest
 //! root (a hash with no names in it). `pay` accepts a stealth transfer
@@ -21,7 +21,7 @@ use tari_template_lib::prelude::*;
 pub const MAX_WINNERS: u32 = 16;
 
 #[template]
-mod hush {
+mod tacita {
     use super::*;
 
     pub struct Campaign {
@@ -44,11 +44,11 @@ mod hush {
             manifest_root: [u8; 32],
             funding: Bucket,
         ) -> Component<Self> {
-            assert!(headcount > 0, "hush: headcount must be at least 1");
-            assert!(headcount <= MAX_WINNERS, "hush: at most 16 winners per round");
-            assert!(total > Amount::zero(), "hush: total must be positive");
-            assert!(name.len() <= 80, "hush: name too long");
-            assert!(funding.amount() >= total, "hush: funding is less than the round total");
+            assert!(headcount > 0, "tacita: headcount must be at least 1");
+            assert!(headcount <= MAX_WINNERS, "tacita: at most 16 winners per round");
+            assert!(total > Amount::zero(), "tacita: total must be positive");
+            assert!(name.len() <= 80, "tacita: name too long");
+            assert!(funding.amount() >= total, "tacita: funding is less than the round total");
 
             let owner = CallerContext::transaction_signer_public_key();
             Component::new(Self {
@@ -68,32 +68,32 @@ mod hush {
         /// Pays every winner of the round in one stealth transfer.
         pub fn pay(&mut self, statement: StealthTransferStatement) {
             self.require_owner();
-            assert!(!self.closed, "hush: campaign is closed");
-            assert!(!self.paid, "hush: round already paid");
+            assert!(!self.closed, "tacita: campaign is closed");
+            assert!(!self.paid, "tacita: round already paid");
 
             let outputs = statement.stealth_outputs();
             assert_eq!(
                 outputs.len(),
                 self.headcount as usize,
-                "hush: need exactly one hidden output per winner"
+                "tacita: need exactly one hidden output per winner"
             );
             for out in outputs {
                 assert!(
                     out.output.viewable_balance_proof.is_none(),
-                    "hush: an output is viewable on chain"
+                    "tacita: an output is viewable on chain"
                 );
                 assert_eq!(
                     out.output.minimum_value_promise, 0,
-                    "hush: outputs may not promise a minimum value"
+                    "tacita: outputs may not promise a minimum value"
                 );
             }
             assert_eq!(
                 statement.revealed_output_amount(),
                 Amount::zero(),
-                "hush: nothing may be paid out in the clear"
+                "tacita: nothing may be paid out in the clear"
             );
             let revealed_in = statement.revealed_input_amount();
-            assert_eq!(revealed_in, self.total, "hush: payout must equal the round total");
+            assert_eq!(revealed_in, self.total, "tacita: payout must equal the round total");
 
             let input = self.vault.withdraw(revealed_in);
             let rm = ResourceManager::get(self.vault.resource_address());
@@ -103,7 +103,7 @@ mod hush {
             }
             self.paid = true;
 
-            emit_event("hush.paid", [
+            emit_event("tacita.paid", [
                 ("headcount".to_string(), self.headcount.to_string()),
                 ("total".to_string(), self.total.to_string()),
             ]);
@@ -112,7 +112,7 @@ mod hush {
         /// Returns whatever is left in the vault to the owner and closes the campaign.
         pub fn close(&mut self) -> Bucket {
             self.require_owner();
-            assert!(!self.closed, "hush: campaign already closed");
+            assert!(!self.closed, "tacita: campaign already closed");
             self.closed = true;
             let left = self.vault.balance();
             self.vault.withdraw(left)
@@ -135,7 +135,7 @@ mod hush {
             assert_eq!(
                 CallerContext::transaction_signer_public_key(),
                 self.owner,
-                "hush: only the campaign owner can do this"
+                "tacita: only the campaign owner can do this"
             );
         }
     }

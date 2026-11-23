@@ -1,9 +1,11 @@
-# hush
+# tacita
 
 pay people privately, and still prove every token.
 
-hush is a tari ootle template for campaign and treasury payouts. each winner's amount stays hidden, the contract enforces that the full announced total goes to exactly the announced number of people, each winner can prove their own line, and an auditor file lets a reviewer check every line against the chain.
+tacita is a tari ootle template for campaign and treasury payouts. each winner's amount stays hidden, the contract enforces that the full announced total goes to exactly the announced number of people, each winner can prove their own line, and an auditor file lets a reviewer check every line against the chain.
 
+> named after tacita, the roman goddess of silence. the amounts are never said, the total is always proven.
+>
 > work in progress for the tari november mvp build contest.
 
 ## the rules `pay` enforces

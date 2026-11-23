@@ -1,12 +1,12 @@
 [package]
-name = "hush-cli"
+name = "tacita-cli"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Builds and checks hush private payout statements."
+description = "Builds and checks tacita private payout statements."
 
 [[bin]]
-name = "hush"
+name = "tacita"
 path = "src/main.rs"
 
 [dependencies]
