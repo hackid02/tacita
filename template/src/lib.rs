@@ -29,7 +29,7 @@ mod tacita {
         name: String,
         total: Amount,
         headcount: u32,
-        manifest_root: [u8; 32],
+        manifest_root: Hash32,
         vault: Vault,
         paid: bool,
         closed: bool,
@@ -41,7 +41,7 @@ mod tacita {
             name: String,
             total: Amount,
             headcount: u32,
-            manifest_root: [u8; 32],
+            manifest_root: Hash32,
             funding: Bucket,
         ) -> Component<Self> {
             assert!(headcount > 0, "tacita: headcount must be at least 1");
@@ -119,7 +119,7 @@ mod tacita {
         }
 
         /// Public view: name, total, headcount, manifest root, paid, closed, balance.
-        pub fn summary(&self) -> (String, Amount, u32, [u8; 32], bool, bool, Amount) {
+        pub fn summary(&self) -> (String, Amount, u32, Hash32, bool, bool, Amount) {
             (
                 self.name.clone(),
                 self.total,
