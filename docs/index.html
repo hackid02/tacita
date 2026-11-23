@@ -3,146 +3,211 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>tacita · private payouts you can check</title>
-<meta name="description" content="pay a whole bounty or ambassador round privately on tari ootle, and let anyone check it was fair.">
+<title>tacita · private payouts anyone can check</title>
+<meta name="description" content="pay a whole bounty or ambassador round privately on tari ootle, and let anyone check the list wasn't changed.">
+<link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/source-serif-4-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  /* type: source serif 4 for reading, ibm plex mono for anything you might copy or compare,
+     marcellus (an inscriptional roman) only for small capital labels. scale ratio 1.25. */
+  @font-face { font-family: "Source Serif 4"; src: url(fonts/source-serif-4-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Source Serif 4"; src: url(fonts/source-serif-4-latin-400-italic.woff2) format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+  @font-face { font-family: "Source Serif 4"; src: url(fonts/source-serif-4-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+  @font-face { font-family: "Plex Mono"; src: url(fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Plex Mono"; src: url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "Marcellus"; src: url(fonts/marcellus-latin-400-normal.woff2) format("woff2"); font-display: swap; }
+
   :root {
-    --ink: #1c1a17;
-    --muted: #6d675e;
-    --faint: #9a948a;
-    --line: #e2dcd1;
-    --paper: #f7f4ee;
-    --card: #fffdf9;
-    --accent: #5537c9;
-    --accent-ink: #ffffff;
-    --ok: #1d7448;
-    --bad: #b3261e;
-    --shadow: 0 1px 2px rgba(28, 26, 23, 0.05), 0 8px 24px rgba(28, 26, 23, 0.06);
-    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-    --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
+    /* five colours with jobs. vermilion is roman rubrication ink: it marks the seal and the
+       fingerprint and nothing else. */
+    --ink: #16130f;
+    --soft: #5c564d;
+    --rule: #d9d4cb;
+    --paper: #f5f4f1;
+    --well: #ecebe7;
+    --seal: #c2361d;
+    --yes: #2c6a45;
+    --serif: "Source Serif 4", Georgia, serif;
+    --mono: "Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+    --caps: "Marcellus", "Source Serif 4", serif;
+    --s1: 14px; --s2: 17px; --s3: 21px; --s4: 26px; --s5: 33px; --s6: 41px;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --ink: #ece8e1; --muted: #a8a196; --faint: #7a746b; --line: #34302b; --paper: #141311; --card: #1c1a17;
-      --accent: #a894ff; --accent-ink: #141311; --ok: #62c793; --bad: #ff8a80;
-      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
-    }
+    :root { --ink: #eeebe5; --soft: #a59f95; --rule: #34302a; --paper: #12100d; --well: #1c1915; --seal: #e0533a; --yes: #6cc48f; }
   }
+
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.6 var(--serif); }
-  main { max-width: 720px; margin: 0 auto; padding: 64px 20px 72px; }
-  code { font-family: var(--mono); font-size: 0.86em; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: var(--s2)/1.6 var(--serif); font-optical-sizing: auto; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 28px; }
+  a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  code { font: 0.86em var(--mono); }
 
-  .brand { font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; color: var(--muted); }
-  h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.15; font-weight: normal; letter-spacing: -0.02em; margin: 14px 0 12px; text-wrap: balance; }
-  .lede { color: var(--muted); margin: 0; max-width: 34em; text-wrap: pretty; }
+  .top { display: flex; justify-content: space-between; align-items: center; padding: 26px 0; border-bottom: 1px solid var(--rule); }
+  .top img { height: 28px; width: auto; display: block; }
+  .top nav { font: var(--s1) var(--mono); color: var(--soft); display: flex; gap: 22px; }
+  .top nav a { text-decoration: none; }
 
-  .card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 22px; margin-top: 32px; }
-  h2 { font-size: 19px; font-weight: normal; margin: 0 0 4px; }
-  .hint { color: var(--muted); font-size: 15px; margin: 0 0 14px; }
+  .label { font: 13px var(--caps); letter-spacing: 0.16em; text-transform: uppercase; color: var(--soft); }
+
+  .hero { display: grid; grid-template-columns: 7fr 5fr; gap: 56px; padding: 72px 0 56px; align-items: end; }
+  h1 { font-size: clamp(var(--s5), 5.4vw, 56px); line-height: 1.06; font-weight: 400; letter-spacing: -0.02em; margin: 14px 0 0; text-wrap: balance; }
+  h1 em { font-style: italic; }
+  .hero p { margin: 0; color: var(--soft); font-size: var(--s3); line-height: 1.5; text-wrap: pretty; }
+
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .facts div { padding: 16px 20px 18px 0; }
+  .facts div + div { padding-left: 20px; border-left: 1px solid var(--rule); }
+  .facts b { display: block; font: 500 var(--s4)/1.2 var(--mono); letter-spacing: -0.02em; }
+  .facts span { color: var(--soft); font-size: var(--s1); }
+
+  .tool { display: grid; grid-template-columns: 4fr 8fr; gap: 56px; padding: 64px 0; border-bottom: 1px solid var(--rule); }
+  h2 { font-size: var(--s4); font-weight: 400; line-height: 1.25; margin: 10px 0 12px; }
+  .side p { color: var(--soft); margin: 0 0 12px; font-size: var(--s2); }
 
   textarea, input {
-    width: 100%; font: 14px/1.5 var(--mono); color: var(--ink); background: var(--paper);
-    border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px;
+    width: 100%; font: 14px/1.55 var(--mono); color: var(--ink); background: var(--well);
+    border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 14px 14px 12px;
   }
-  textarea { min-height: 150px; resize: vertical; }
-  textarea:focus-visible, input:focus-visible, button:focus-visible, .file:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .row { display: flex; gap: 14px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  textarea { min-height: 168px; resize: vertical; display: block; }
+  ::placeholder { color: var(--soft); opacity: 0.8; }
+  :focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+  .row { display: flex; gap: 22px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
   button {
-    font: 16px var(--serif); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px;
-    padding: 10px 18px; cursor: pointer; transition: transform 160ms var(--ease-out);
+    font: 500 15px var(--mono); background: var(--ink); color: var(--paper); border: 0; border-radius: 2px;
+    padding: 11px 18px; cursor: pointer; transition: transform 160ms var(--ease-out);
   }
   button:active { transform: scale(0.97); }
-  button.quiet { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--line); }
-  .file { font-size: 15px; color: var(--accent); cursor: pointer; }
+  .ghost { background: none; color: var(--ink); padding: 0; font: 15px var(--mono); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+  .file { font: 15px var(--mono); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; cursor: pointer; }
   .file input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-  .link { font: 15px var(--serif); background: none; color: var(--muted); padding: 0; text-decoration: underline; text-underline-offset: 3px; }
   @media (hover: hover) and (pointer: fine) {
-    button:not(.link):hover { filter: brightness(1.08); }
-    .file:hover, .link:hover { color: var(--ink); }
+    button:not(.ghost):hover { background: var(--seal); }
+    .ghost:hover, .file:hover, .top nav a:hover { color: var(--seal); }
   }
 
-  /* the fold: list lines collapse into the fingerprint */
-  .stage { position: relative; margin-top: 18px; }
-  .lines { font: 12px/1.9 var(--mono); color: var(--muted); }
-  .lines div { display: flex; justify-content: space-between; gap: 12px; white-space: nowrap; overflow: hidden; }
+  .lines { font: 12px/1.9 var(--mono); color: var(--soft); margin-top: 18px; }
+  .lines div { display: flex; justify-content: space-between; gap: 14px; white-space: nowrap; overflow: hidden; }
   .lines .addr { overflow: hidden; text-overflow: ellipsis; }
   .lines .amt { color: var(--ink); }
 
-  dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; font-size: 15px; }
-  dt { color: var(--muted); }
-  dd { margin: 0; font: 14px/1.5 var(--mono); overflow-wrap: anywhere; }
-  .root { color: var(--accent); }
-  .msg { margin-top: 14px; font-size: 16px; min-height: 1.6em; }
-  .msg.ok { color: var(--ok); }
-  .msg.bad { color: var(--bad); }
-  .errors { margin: 8px 0 0; padding-left: 18px; color: var(--bad); font-size: 15px; }
+  .ledger { margin-top: 22px; border-top: 1px solid var(--ink); }
+  .ledger div { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+  .ledger dt { font: 13px var(--caps); letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); padding-top: 2px; }
+  .ledger dd { margin: 0; font: 15px/1.5 var(--mono); overflow-wrap: anywhere; }
+  .ledger .fp { color: var(--seal); }
+  dl { margin: 0; }
+
+  .msg { margin-top: 14px; font-size: var(--s2); min-height: 1.6em; }
+  .msg.yes { color: var(--yes); }
+  .msg.no { color: var(--ink); }
+  .msg.no::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--seal); border-radius: 50%; margin: 0 10px 2px 0; }
+  .errors { margin: 10px 0 0; padding: 0; list-style: none; font: 14px/1.6 var(--mono); }
+  .errors li::before { content: "× "; color: var(--seal); }
   .errors:empty { display: none; }
 
-  .steps { list-style: none; padding: 0; margin: 40px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-  .steps li { border-top: 1px solid var(--line); padding-top: 12px; }
-  .steps b { display: block; font-weight: normal; font-size: 17px; }
-  .steps span { color: var(--muted); font-size: 15px; }
-  .steps .n { font-family: var(--mono); font-size: 12px; color: var(--faint); display: block; margin-bottom: 4px; }
-  @media (max-width: 620px) { .steps { grid-template-columns: 1fr; gap: 14px; } }
+  .how { padding: 64px 0; border-bottom: 1px solid var(--rule); }
+  .how ol { list-style: none; margin: 18px 0 0; padding: 0; counter-reset: s; }
+  .how li { display: grid; grid-template-columns: 64px 220px 1fr; gap: 16px; padding: 18px 0; border-top: 1px solid var(--rule); counter-increment: s; }
+  .how li::before { content: counter(s, decimal-leading-zero); font: 14px var(--mono); color: var(--soft); padding-top: 4px; }
+  .how b { font-weight: 400; font-size: var(--s3); }
+  .how span { color: var(--soft); }
 
-  footer { margin-top: 44px; color: var(--muted); font-size: 15px; }
-  footer p { margin: 0 0 12px; max-width: 36em; }
-  footer a { color: var(--accent); text-underline-offset: 3px; }
+  footer { padding: 40px 0 64px; color: var(--soft); font-size: var(--s1); display: grid; grid-template-columns: 7fr 5fr; gap: 56px; }
+  footer p { margin: 0; }
+
+  @media (max-width: 820px) {
+    .hero, .tool, footer { grid-template-columns: 1fr; gap: 22px; }
+    .hero { padding: 48px 0 36px; }
+    .tool, .how { padding: 44px 0; }
+    .how li { grid-template-columns: 44px 1fr; }
+    .how li span { grid-column: 2; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 20px; }
+    .facts { grid-template-columns: 1fr; }
+    .facts div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--rule); }
+    .ledger div { grid-template-columns: 1fr; gap: 2px; }
+    .top nav a.hide-sm { display: none; }
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<main>
-  <div class="brand">TACITA</div>
-  <h1>pay a whole round privately. let anyone check it was fair.</h1>
-  <p class="lede">for bounty and ambassador rounds on tari ootle. nobody sees who got how much. everyone can check that the list wasn't changed after the round was locked.</p>
+<div class="wrap">
+  <header class="top">
+    <picture>
+      <source srcset="brand/tacita-logo-dark.svg" media="(prefers-color-scheme: dark)">
+      <img src="brand/tacita-logo.svg" alt="tacita" width="106" height="28">
+    </picture>
+    <nav><a href="#check">check a list</a><a class="hide-sm" href="#how">how it works</a><a href="https://github.com/hackid02/tacita">source</a></nav>
+  </header>
 
-  <section class="card" aria-labelledby="check-h">
-    <h2 id="check-h">check a round's list</h2>
-    <p class="hint">paste the winners list, one <code>address,amount</code> per line, amounts in TARI. it's worked out in your browser and nothing is uploaded.</p>
-    <textarea id="list" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="winners list" placeholder="# round 1&#10;otl_1abc...,1.5&#10;otl_1def...,0.75"></textarea>
-    <div class="row">
-      <button id="go">check list</button>
-      <label class="file">open a file<input id="file" type="file" accept=".csv,.txt,text/plain"></label>
-      <button class="link" id="sample" type="button">try a sample</button>
+  <section class="hero">
+    <div>
+      <div class="label">private payouts on tari ootle</div>
+      <h1>pay the whole round privately. <em>let anyone check it was fair.</em></h1>
     </div>
+    <p>built for bounty and ambassador rounds. nobody sees who got how much, and everyone can check the winners list wasn't changed after it was locked.</p>
+  </section>
 
-    <div class="stage" id="stage" aria-live="polite">
-      <div class="lines" id="lines" aria-hidden="true"></div>
-      <div id="result" hidden>
-        <dl>
-          <dt>winners</dt><dd id="r-count"></dd>
-          <dt>total</dt><dd id="r-total"></dd>
-          <dt>fingerprint</dt><dd id="r-root" class="root"></dd>
+  <div class="facts">
+    <div><b>16</b><span>winners paid in one transaction</span></div>
+    <div><b>total</b><span>is the only amount made public, never each share</span></div>
+    <div><b>1</b><span>fingerprint locks the list before payout</span></div>
+  </div>
+
+  <section class="tool" id="check" aria-labelledby="check-h">
+    <div class="side">
+      <div class="label">check a list</div>
+      <h2 id="check-h">does your list match the round?</h2>
+      <p>paste the winners list, one <code>address,amount</code> per line, amounts in TARI.</p>
+      <p>it's worked out in your browser. nothing is uploaded.</p>
+    </div>
+    <div>
+      <textarea id="list" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="winners list" placeholder="# round 1&#10;otl_1abc...,1.5&#10;otl_1def...,0.75"></textarea>
+      <div class="row">
+        <button id="go">check list</button>
+        <label class="file">open a file<input id="file" type="file" accept=".csv,.txt,text/plain"></label>
+        <button class="ghost" id="sample" type="button">try a sample</button>
+      </div>
+
+      <div aria-live="polite">
+        <div class="lines" id="lines" aria-hidden="true"></div>
+        <dl class="ledger" id="result" hidden>
+          <div><dt>winners</dt><dd id="r-count"></dd></div>
+          <div><dt>total</dt><dd id="r-total"></dd></div>
+          <div><dt>fingerprint</dt><dd id="r-root" class="fp"></dd></div>
         </dl>
       </div>
+      <div id="msg" class="msg" role="status"></div>
+      <ul id="errors" class="errors"></ul>
+
+      <div id="cmp-box" hidden style="margin-top:34px">
+        <div class="label" style="margin-bottom:10px">compare with the campaign</div>
+        <input id="expected" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="campaign fingerprint" placeholder="paste the fingerprint the campaign locked on chain">
+        <div class="row"><button id="compare">compare</button></div>
+        <div id="cmp" class="msg" role="status"></div>
+      </div>
     </div>
-    <div id="msg" class="msg" role="status"></div>
-    <ul id="errors" class="errors"></ul>
   </section>
 
-  <section class="card" aria-labelledby="cmp-h">
-    <h2 id="cmp-h">compare with a campaign</h2>
-    <p class="hint">paste the fingerprint the campaign locked on chain (from <code>tacita show</code> or the round's announcement). a match means this is exactly the list it committed to before paying.</p>
-    <input id="expected" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="campaign fingerprint" placeholder="64 hex characters">
-    <div class="row"><button class="quiet" id="compare">compare</button></div>
-    <div id="cmp" class="msg" role="status"></div>
+  <section class="how" id="how" aria-labelledby="how-h">
+    <div class="label">how it works</div>
+    <h2 id="how-h">three steps, all on chain.</h2>
+    <ol>
+      <li><b>lock</b><span>the organiser puts the round's total and the list's fingerprint on chain before anyone is paid.</span></li>
+      <li><b>pay</b><span>one transaction pays every winner. each amount is hidden, and the contract refuses any payout that doesn't add up to the locked total or the locked headcount.</span></li>
+      <li><b>check</b><span>anyone holding the list can confirm it's the one that was locked. no screenshots, no "trust me".</span></li>
+    </ol>
   </section>
-
-  <ol class="steps">
-    <li><span class="n">01</span><b>lock</b><span>the round's total and the list's fingerprint go on chain before anyone is paid.</span></li>
-    <li><span class="n">02</span><b>pay</b><span>one transaction pays everyone. each amount is hidden, and the contract refuses anything that doesn't add up to the total.</span></li>
-    <li><span class="n">03</span><b>check</b><span>anyone holding the list can confirm it matches. no screenshots, no "trust me".</span></li>
-  </ol>
 
   <footer>
-    <p>what this shows: the campaign locked this exact total for this exact list before anyone was paid, and paid exactly that many people. what it doesn't show is who got how much. that stays private, which is the point.</p>
-    <p><a href="https://github.com/hackid02/tacita">source on github</a> · built on tari ootle · named after tacita, the roman goddess of silence</p>
+    <p>what this proves: the campaign locked this exact total for this exact list before anyone was paid, and paid exactly that many people. what it doesn't show is who got how much. that stays private, which is the point. one honest limit: in a very small round, shares are easier to guess from the total.</p>
+    <p>named after tacita, the roman goddess of silence. open source under mit. <a href="https://github.com/hackid02/tacita">github.com/hackid02/tacita</a></p>
   </footer>
-</main>
+</div>
 
 <script>
 // keep this in step with cli/src/manifest.rs. the fingerprint must match byte for byte.
@@ -195,20 +260,19 @@ async function rootOf(lines) {
 
 const $ = id => document.getElementById(id);
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+const EASE = "cubic-bezier(0.23, 1, 0.32, 1)";
 let lastRoot = null;
-let running = null;
+let running = [];
 
-function plural(n, word) { return n + " " + word + (n === 1 ? "" : "s"); }
-
+const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
 function setMsg(el, text, kind) { el.textContent = text; el.className = "msg" + (kind ? " " + kind : ""); }
 
-// the signature moment: each line slides down into the fingerprint and its amount blurs out.
+// the one moment that moves: each line drops toward the fingerprint and its amount blurs out.
 async function fold(lines) {
   const box = $("lines");
+  running.forEach(a => a.cancel());
   box.innerHTML = "";
-  if (running) running.forEach(a => a.cancel());
-  const shown = lines.slice(0, 8);
-  const rows = shown.map(l => {
+  const rows = lines.slice(0, 8).map(l => {
     const d = document.createElement("div");
     const a = document.createElement("span"); a.className = "addr"; a.textContent = l.address;
     const m = document.createElement("span"); m.className = "amt"; m.textContent = fmtTari(l.amount);
@@ -219,11 +283,11 @@ async function fold(lines) {
   } else {
     running = [];
     rows.forEach((r, i) => {
-      const lift = (rows.length - i) * 6;
+      const drop = (rows.length - i) * 6;
       running.push(r.m.animate([{ filter: "blur(0)" }, { filter: "blur(4px)" }], { duration: 220, delay: i * 40, easing: "ease", fill: "forwards" }));
       running.push(r.d.animate(
-        [{ transform: "translateY(0) scale(1)", opacity: 1 }, { transform: "translateY(" + lift + "px) scale(0.96)", opacity: 0 }],
-        { duration: 280, delay: 120 + i * 40, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "forwards" }
+        [{ transform: "translateY(0) scale(1)", opacity: 1 }, { transform: "translateY(" + drop + "px) scale(0.96)", opacity: 0 }],
+        { duration: 280, delay: 120 + i * 40, easing: EASE, fill: "forwards" }
       ));
     });
   }
@@ -231,13 +295,12 @@ async function fold(lines) {
   box.innerHTML = "";
 }
 
-function reveal() {
-  const r = $("result");
-  r.hidden = false;
-  const frames = reduced.matches
+function reveal(el) {
+  el.hidden = false;
+  el.animate(reduced.matches
     ? [{ opacity: 0 }, { opacity: 1 }]
-    : [{ opacity: 0, transform: "scale(0.97)", filter: "blur(2px)" }, { opacity: 1, transform: "scale(1)", filter: "blur(0)" }];
-  r.animate(frames, { duration: 240, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
+    : [{ opacity: 0, transform: "translateY(4px)", filter: "blur(2px)" }, { opacity: 1, transform: "none", filter: "blur(0)" }],
+    { duration: 240, easing: EASE });
 }
 
 async function check() {
@@ -254,21 +317,22 @@ async function check() {
   $("r-count").textContent = lines.length;
   $("r-total").textContent = fmtTari(lines.reduce((a, l) => a + l.amount, 0n)) + " TARI";
   $("r-root").textContent = root;
-  reveal();
-  setMsg($("msg"), "valid list: " + plural(lines.length, "winner") + ". the amounts aren't part of what anyone else sees.", "ok");
+  reveal($("result"));
+  setMsg($("msg"), "valid list, " + plural(lines.length, "winner") + ". only the fingerprint is ever published.", "yes");
+  if ($("cmp-box").hidden) reveal($("cmp-box"));
   if ($("expected").value.trim()) compare();
 }
 
 function compare() {
   const want = $("expected").value.trim().toLowerCase().replace(/^0x/, "");
   const out = $("cmp");
-  if (!lastRoot) return setMsg(out, "check a list first.", "bad");
-  if (!/^[0-9a-f]{64}$/.test(want)) return setMsg(out, "a fingerprint is 64 characters, 0-9 and a-f.", "bad");
-  if (want === lastRoot) setMsg(out, "match. this is the list the campaign committed to.", "ok");
-  else setMsg(out, "no match. this is not the list the campaign committed to.", "bad");
+  if (!lastRoot) return setMsg(out, "check a list first.", "no");
+  if (!/^[0-9a-f]{64}$/.test(want)) return setMsg(out, "a fingerprint is 64 characters, 0-9 and a-f.", "no");
+  if (want === lastRoot) setMsg(out, "match. this is the list the campaign locked.", "yes");
+  else setMsg(out, "no match. this is not the list the campaign locked.", "no");
 }
 
-// a sample made of example addresses, so people can see the flow without a real round.
+// example addresses, so the flow can be seen without a real round.
 const SAMPLE = [
   "# sample round (example addresses)",
   "otl_1cscp8a5rhv7j5u4kzumgn48vn5ddkg3fp9ygp6agqgc7r9e5uda7vr3hah0l40yuu0x6saz7nl0e5pgcx79atmgka5pkmmhg0fdzkvqdwtdxq,1.5",
@@ -285,7 +349,7 @@ $("file").addEventListener("change", async e => {
   $("list").value = await f.text(); check();
 });
 const params = new URLSearchParams(location.hash.slice(1));
-if (params.get("root")) $("expected").value = params.get("root");
+if (params.get("root")) { $("expected").value = params.get("root"); $("cmp-box").hidden = false; }
 </script>
 </body>
 </html>
