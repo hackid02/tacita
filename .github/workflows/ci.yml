@@ -41,3 +41,22 @@ jobs:
           workspaces: cli
       - name: test
         run: cargo test
+
+  cli-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: cli
+      - name: build hush.exe
+        run: cargo build --release
+      - name: upload hush.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: hush-windows
+          path: cli/target/release/hush.exe
