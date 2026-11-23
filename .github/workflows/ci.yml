@@ -27,3 +27,17 @@ jobs:
         with:
           name: hush-template-wasm
           path: template/target/wasm32-unknown-unknown/release/hush.wasm
+
+  cli:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: cli
+      - name: test
+        run: cargo test
