@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tacita · check a payout list</title>
+<style>
+  :root {
+    --ink: #1d1b18;
+    --muted: #6b665e;
+    --line: #dcd6cb;
+    --paper: #f6f3ed;
+    --card: #fffdf9;
+    --accent: #5b3fd0;
+    --ok: #1f7a4d;
+    --bad: #b3261e;
+    --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #ece8e1; --muted: #a39d93; --line: #39352f; --paper: #161513; --card: #1e1c19; --accent: #a996ff; --ok: #5fc48f; --bad: #ff8a80; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 Georgia, "Iowan Old Style", serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 22px 80px; }
+  header h1 { font-size: 40px; font-weight: normal; letter-spacing: -0.5px; margin: 0; }
+  header p { color: var(--muted); margin: 6px 0 0; font-style: italic; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 22px; margin-top: 28px; }
+  h2 { font-size: 20px; font-weight: normal; margin: 0 0 6px; }
+  .hint { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+  textarea, input { width: 100%; font: 13px/1.5 var(--mono); color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 10px; }
+  textarea { min-height: 170px; resize: vertical; }
+  textarea:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  button { font: 15px Georgia, serif; background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 9px 16px; cursor: pointer; }
+  button.quiet { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  label.file { font-size: 14px; color: var(--accent); cursor: pointer; text-decoration: underline; }
+  label.file input { display: none; }
+  dl { display: grid; grid-template-columns: 150px 1fr; gap: 6px 14px; margin: 18px 0 0; font-size: 15px; }
+  dt { color: var(--muted); }
+  dd { margin: 0; font-family: var(--mono); font-size: 13px; word-break: break-all; }
+  .msg { margin-top: 14px; font-size: 15px; }
+  .msg.ok { color: var(--ok); }
+  .msg.bad { color: var(--bad); }
+  .errors { margin: 8px 0 0; padding-left: 18px; color: var(--bad); font-size: 14px; }
+  footer { margin-top: 36px; color: var(--muted); font-size: 14px; }
+  footer a { color: var(--accent); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>tacita</h1>
+    <p>pay people privately, and still prove every token.</p>
+  </header>
+
+  <section>
+    <h2>check a payout list</h2>
+    <p class="hint">paste the winners file for a round, one <code>address,amount</code> per line, amounts in TARI. this page works it out in your browser. nothing is uploaded.</p>
+    <textarea id="list" spellcheck="false" placeholder="# round 1&#10;otl_1abc...,1.5&#10;otl_1def...,0.75"></textarea>
+    <div class="row">
+      <button id="go">check</button>
+      <label class="file">or open a file<input id="file" type="file" accept=".csv,.txt,text/plain"></label>
+    </div>
+    <div id="result" class="hidden">
+      <dl>
+        <dt>winners</dt><dd id="r-count"></dd>
+        <dt>total</dt><dd id="r-total"></dd>
+        <dt>manifest root</dt><dd id="r-root"></dd>
+      </dl>
+    </div>
+    <div id="msg" class="msg"></div>
+    <ul id="errors" class="errors"></ul>
+  </section>
+
+  <section>
+    <h2>compare with a campaign</h2>
+    <p class="hint">paste the manifest root stored in a campaign (from <code>tacita show</code> or the campaign announcement). if it matches the list above, this is exactly the list that campaign committed to before paying.</p>
+    <input id="expected" spellcheck="false" placeholder="64 hex characters">
+    <div class="row"><button class="quiet" id="compare">compare</button></div>
+    <div id="cmp" class="msg"></div>
+  </section>
+
+  <footer>
+    what this proves: the campaign locked this exact total for this exact list before anyone was paid, and paid exactly that many people. what it can't show: who got how much. that stays private, which is the point.<br><br>
+    <a href="https://github.com/hackid02/tacita">source on github</a> · built on tari ootle
+  </footer>
+</main>
+
+<script>
+// keep this in step with cli/src/manifest.rs. the root must match byte for byte.
+const MICRO = 1000000n;
+const MAX_WINNERS = 16;
+
+function parseTari(s) {
+  const dot = s.indexOf(".");
+  const whole = dot === -1 ? s : s.slice(0, dot);
+  const frac = dot === -1 ? "" : s.slice(dot + 1);
+  if (whole === "" && frac === "") throw "empty amount";
+  if (frac.length > 6) throw "`" + s + "` has more than 6 decimals";
+  if (!/^\d*$/.test(whole) || !/^\d*$/.test(frac)) throw "`" + s + "` is not a number";
+  const w = whole === "" ? 0n : BigInt(whole);
+  const f = frac === "" ? 0n : BigInt(frac.padEnd(6, "0"));
+  const v = w * MICRO + f;
+  if (v > 18446744073709551615n) throw "`" + s + "` is too large";
+  return v;
+}
+
+function fmtTari(micro) {
+  const s = (micro / MICRO).toString() + "." + (micro % MICRO).toString().padStart(6, "0");
+  return s.replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function parseList(text) {
+  const lines = [], errors = [];
+  text.split(/\r?\n/).forEach((raw, i) => {
+    const row = raw.trim();
+    if (row === "" || row.startsWith("#")) return;
+    const comma = row.indexOf(",");
+    if (comma === -1) { errors.push("line " + (i + 1) + ": expected `address,amount`"); return; }
+    const address = row.slice(0, comma).trim().toLowerCase();
+    if (!/^otl_1[02-9ac-hj-np-z]+$/.test(address)) { errors.push("line " + (i + 1) + ": that doesn't look like an ootle address"); return; }
+    try {
+      const amount = parseTari(row.slice(comma + 1).trim());
+      if (amount === 0n) throw "amount must be above 0";
+      lines.push({ address, amount });
+    } catch (e) { errors.push("line " + (i + 1) + ": " + e); }
+  });
+  if (!errors.length && !lines.length) errors.push("the list has no lines");
+  if (lines.length > MAX_WINNERS) errors.push(lines.length + " winners, but one round pays at most " + MAX_WINNERS);
+  return { lines, errors };
+}
+
+async function rootOf(lines) {
+  const canonical = lines.map(l => l.address + "," + l.amount.toString() + "\n").join("");
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(canonical));
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+const $ = id => document.getElementById(id);
+let lastRoot = null;
+
+async function check() {
+  $("errors").innerHTML = ""; $("msg").textContent = ""; $("msg").className = "msg";
+  $("result").classList.add("hidden"); lastRoot = null;
+  const { lines, errors } = parseList($("list").value);
+  if (errors.length) {
+    errors.forEach(e => { const li = document.createElement("li"); li.textContent = e; $("errors").appendChild(li); });
+    return;
+  }
+  lastRoot = await rootOf(lines);
+  $("r-count").textContent = lines.length;
+  $("r-total").textContent = fmtTari(lines.reduce((a, l) => a + l.amount, 0n)) + " TARI";
+  $("r-root").textContent = lastRoot;
+  $("result").classList.remove("hidden");
+  $("msg").textContent = "the list is valid."; $("msg").className = "msg ok";
+  if ($("expected").value.trim()) compare();
+}
+
+function compare() {
+  const want = $("expected").value.trim().toLowerCase().replace(/^0x/, "");
+  const out = $("cmp");
+  if (!lastRoot) { out.textContent = "check a list first."; out.className = "msg bad"; return; }
+  if (!/^[0-9a-f]{64}$/.test(want)) { out.textContent = "a manifest root is 64 hex characters."; out.className = "msg bad"; return; }
+  if (want === lastRoot) { out.textContent = "match. this is the list the campaign committed to."; out.className = "msg ok"; }
+  else { out.textContent = "no match. this list is not the one the campaign committed to."; out.className = "msg bad"; }
+}
+
+$("go").addEventListener("click", check);
+$("compare").addEventListener("click", compare);
+$("file").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  $("list").value = await f.text(); check();
+});
+const fromHash = new URLSearchParams(location.hash.slice(1)).get("root");
+if (fromHash) $("expected").value = fromHash;
+</script>
+</body>
+</html>
