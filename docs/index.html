@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>tacita · private payouts anyone can check</title>
 <meta name="description" content="pay a whole bounty or ambassador round privately on tari ootle, and let anyone check the list wasn't changed.">
+<meta property="og:title" content="tacita · private payouts anyone can check">
+<meta property="og:description" content="pay the whole round privately. let anyone check it was fair. built on tari ootle.">
 <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="fonts/source-serif-4-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/ibm-plex-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-  /* type: source serif 4 for reading, ibm plex mono for anything you might copy or compare,
-     marcellus (an inscriptional roman) only for small capital labels. scale ratio 1.25. */
   @font-face { font-family: "Source Serif 4"; src: url(fonts/source-serif-4-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
   @font-face { font-family: "Source Serif 4"; src: url(fonts/source-serif-4-latin-400-italic.woff2) format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
   @font-face { font-family: "Source Serif 4"; src: url(fonts/source-serif-4-latin-600-normal.woff2) format("woff2"); font-weight: 600; font-display: swap; }
@@ -18,283 +19,399 @@
   @font-face { font-family: "Marcellus"; src: url(fonts/marcellus-latin-400-normal.woff2) format("woff2"); font-display: swap; }
 
   :root {
-    /* five colours with jobs. vermilion is roman rubrication ink: it marks the seal and the
-       fingerprint and nothing else. */
-    --ink: #16130f;
-    --soft: #5c564d;
-    --rule: #d9d4cb;
-    --paper: #f5f4f1;
-    --well: #ecebe7;
-    --seal: #c2361d;
-    --yes: #2c6a45;
+    --ink: #16130f; --ink-2: #221e19; --soft: #5c564d; --rule: #d9d4cb; --paper: #f5f4f1; --well: #ecebe7; --white: #fbfaf8;
+    --seal: #c2361d; --seal-lt: #e0533a; --yes: #2c6a45; --yes-lt: #6cc48f;
+    --d-text: #eeebe5; --d-soft: #a59f95; --d-rule: #34302a;
     --serif: "Source Serif 4", Georgia, serif;
     --mono: "Plex Mono", ui-monospace, Menlo, Consolas, monospace;
     --caps: "Marcellus", "Source Serif 4", serif;
     --s1: 14px; --s2: 17px; --s3: 21px; --s4: 26px; --s5: 33px; --s6: 41px;
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease: cubic-bezier(0.23, 1, 0.32, 1);
+    --lift: 0 1px 0 rgba(22,19,15,.04), 0 2px 6px rgba(22,19,15,.04), 0 28px 56px -32px rgba(22,19,15,.38);
   }
-  @media (prefers-color-scheme: dark) {
-    :root { --ink: #eeebe5; --soft: #a59f95; --rule: #34302a; --paper: #12100d; --well: #1c1915; --seal: #e0533a; --yes: #6cc48f; }
-  }
-
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: var(--s2)/1.6 var(--serif); font-optical-sizing: auto; }
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 28px; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 76px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: var(--s2)/1.6 var(--serif); font-optical-sizing: auto; font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
   a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
   code { font: 0.86em var(--mono); }
-
-  .top { display: flex; justify-content: space-between; align-items: center; padding: 26px 0; border-bottom: 1px solid var(--rule); }
-  .top img { height: 28px; width: auto; display: block; }
-  .top nav { font: var(--s1) var(--mono); color: var(--soft); display: flex; gap: 22px; }
-  .top nav a { text-decoration: none; }
+  :focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+  [hidden] { display: none !important; }
 
   .label { font: 13px var(--caps); letter-spacing: 0.16em; text-transform: uppercase; color: var(--soft); }
+  h2 { font-size: var(--s6); font-weight: 400; line-height: 1.1; letter-spacing: -0.015em; margin: 12px 0 0; text-wrap: balance; }
+  h2 em, h1 em { font-style: italic; }
+  .sec-intro { display: grid; grid-template-columns: 6fr 5fr; gap: 64px; align-items: end; }
+  .sec-intro p { color: var(--soft); margin: 0; font-size: var(--s3); line-height: 1.5; text-wrap: pretty; }
 
-  .hero { display: grid; grid-template-columns: 7fr 5fr; gap: 56px; padding: 72px 0 56px; align-items: end; }
-  h1 { font-size: clamp(var(--s5), 5.4vw, 56px); line-height: 1.06; font-weight: 400; letter-spacing: -0.02em; margin: 14px 0 0; text-wrap: balance; }
-  h1 em { font-style: italic; }
-  .hero p { margin: 0; color: var(--soft); font-size: var(--s3); line-height: 1.5; text-wrap: pretty; }
+  /* ---------- fixed nav ---------- */
+  .nav { position: sticky; top: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid transparent; transition: border-color 200ms var(--ease); }
+  .nav.scrolled { border-bottom-color: var(--rule); }
+  .nav .wrap { display: flex; justify-content: space-between; align-items: center; height: 64px; }
+  .nav img { height: 26px; width: auto; display: block; }
+  .nav nav { display: flex; gap: 28px; align-items: center; font: var(--s1) var(--mono); color: var(--soft); }
+  .nav nav a { text-decoration: none; }
+  .nav .gh { color: var(--ink); border: 1px solid var(--ink); padding: 7px 12px; border-radius: 2px; }
 
-  .facts { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); }
-  .facts div { padding: 16px 20px 18px 0; }
-  .facts div + div { padding-left: 20px; border-left: 1px solid var(--rule); }
-  .facts b { display: block; font: 500 var(--s4)/1.2 var(--mono); letter-spacing: -0.02em; }
-  .facts span { color: var(--soft); font-size: var(--s1); }
-
-  .tool { display: grid; grid-template-columns: 4fr 8fr; gap: 56px; padding: 64px 0; border-bottom: 1px solid var(--rule); }
-  h2 { font-size: var(--s4); font-weight: 400; line-height: 1.25; margin: 10px 0 12px; }
-  .side p { color: var(--soft); margin: 0 0 12px; font-size: var(--s2); }
-
-  textarea, input {
-    width: 100%; font: 14px/1.55 var(--mono); color: var(--ink); background: var(--well);
-    border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 14px 14px 12px;
-  }
-  textarea { min-height: 168px; resize: vertical; display: block; }
-  ::placeholder { color: var(--soft); opacity: 0.8; }
-  :focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
-  .row { display: flex; gap: 22px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
-  button {
-    font: 500 15px var(--mono); background: var(--ink); color: var(--paper); border: 0; border-radius: 2px;
-    padding: 11px 18px; cursor: pointer; transition: transform 160ms var(--ease-out);
-  }
-  button:active { transform: scale(0.97); }
-  .ghost { background: none; color: var(--ink); padding: 0; font: 15px var(--mono); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
-  .file { font: 15px var(--mono); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; cursor: pointer; }
-  .file input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  /* ---------- buttons ---------- */
+  .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font: 500 15px var(--mono); background: var(--ink); color: var(--paper); border: 0; border-radius: 2px; padding: 12px 20px; text-decoration: none; cursor: pointer; transition: transform 160ms var(--ease), background-color 160ms var(--ease); }
+  .btn:active { transform: scale(0.97); }
+  .btn.light { background: var(--d-text); color: var(--ink); }
+  .ghost { background: none; border: 0; color: inherit; padding: 0; min-height: 44px; display: inline-flex; align-items: center; font: 15px var(--mono); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; cursor: pointer; }
   @media (hover: hover) and (pointer: fine) {
-    button:not(.ghost):hover { background: var(--seal); }
-    .ghost:hover, .file:hover, .top nav a:hover { color: var(--seal); }
+    .btn:hover { background: var(--seal); color: #fff; }
+    .ghost:hover, .nav nav a:hover { color: var(--seal); }
+    .nav .gh:hover { background: var(--ink); color: var(--paper); }
   }
 
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: 11fr 10fr; gap: 72px; align-items: center; padding: 72px 0 88px; }
+  .hero > * { min-width: 0; }
+  h1 { font-size: clamp(38px, 5.4vw, 66px); line-height: 1.03; font-weight: 400; letter-spacing: -0.025em; margin: 16px 0 0; text-wrap: balance; }
+  .lede { color: var(--soft); font-size: var(--s3); line-height: 1.5; margin: 24px 0 32px; max-width: 30em; text-wrap: pretty; }
+  .cta { display: flex; gap: 26px; align-items: center; flex-wrap: wrap; }
+  .trust { margin-top: 36px; display: flex; gap: 22px; flex-wrap: wrap; font: 13px var(--mono); color: var(--soft); }
+  .trust span::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--yes); margin: 0 8px 2px 0; }
+  .rise { animation: rise 700ms var(--ease) both; animation-delay: calc(var(--d, 0) * 100ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* the stack: example round on top, the chain's receipt behind it */
+  .stack { position: relative; padding: 0 0 72px 0; }
+  .sheet { position: relative; z-index: 2; background: var(--white); padding: 24px 26px 22px; font: 14px/1 var(--mono); box-shadow: var(--lift); border-radius: 3px; }
+  .sheet header { display: flex; justify-content: space-between; color: var(--soft); font-size: 12px; letter-spacing: 0.04em; padding-bottom: 14px; border-bottom: 1px solid var(--ink); }
+  .sheet .r { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--rule); align-items: center; }
+  .sheet .who { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .sheet .who small { color: var(--soft); font-size: 12px; margin-left: 8px; }
+  .sheet .amt { position: relative; min-width: 84px; text-align: right; }
+  .sheet .amt i { font-style: normal; display: inline-block; animation: hush 7s var(--ease) infinite; animation-delay: calc(var(--i) * .32s); }
+  .sheet .amt::after { content: ""; position: absolute; inset: -3px -4px; background: var(--ink); transform-origin: left; transform: scaleX(0); animation: redact 7s var(--ease) infinite; animation-delay: calc(var(--i) * .32s); }
+  .sheet .foot { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding-top: 16px; align-items: end; }
+  .sheet .foot span { color: var(--soft); font-size: 11px; display: block; margin-bottom: 6px; letter-spacing: 0.06em; }
+  .sheet .total { font-size: 18px; }
+  .sheet .fp { color: var(--seal); font-size: 12px; overflow-wrap: anywhere; line-height: 1.5; opacity: 0; animation: fpin 7s var(--ease) infinite; }
+  .stamp { position: absolute; right: -28px; top: -34px; width: 108px; height: 108px; opacity: 0; animation: stamp 7s var(--ease) infinite; filter: drop-shadow(0 8px 12px rgba(194,54,29,.28)); z-index: 3; }
+  .stamp img { width: 100%; height: 100%; display: block; transform: rotate(-12deg); }
+  .receipt { position: absolute; z-index: 1; left: 44px; right: -24px; bottom: 0; background: var(--ink); color: var(--d-text); border-radius: 3px; padding: 14px 20px 16px; font: 12px/1 var(--mono); box-shadow: var(--lift); }
+  .receipt .top { display: flex; justify-content: space-between; color: var(--d-soft); letter-spacing: .04em; padding-bottom: 10px; border-bottom: 1px solid var(--d-rule); }
+  .receipt .grid { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; gap: 12px; padding-top: 12px; }
+  .receipt dt { color: var(--d-soft); font-size: 11px; margin-bottom: 6px; }
+  .receipt dd { margin: 0; font-size: 13px; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--yes-lt); }
+  @keyframes redact { 0%, 6% { transform: scaleX(0); } 14%, 84% { transform: scaleX(1); } 92%, 100% { transform: scaleX(0); } }
+  @keyframes hush { 0%, 6% { filter: blur(0); } 12%, 86% { filter: blur(3px); } 92%, 100% { filter: blur(0); } }
+  @keyframes stamp { 0%, 44% { opacity: 0; transform: scale(1.35); } 50% { opacity: 1; transform: scale(.96); } 54%, 84% { opacity: 1; transform: scale(1); } 92%, 100% { opacity: 0; } }
+  @keyframes fpin { 0%, 50% { opacity: 0; } 58%, 84% { opacity: 1; } 92%, 100% { opacity: 0; } }
+
+  /* ---------- stat strip ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .stats div { padding: 22px 22px 24px 0; }
+  .stats div + div { padding-left: 22px; border-left: 1px solid var(--rule); }
+  .stats b { display: block; font: 400 var(--s6)/1 var(--serif); letter-spacing: -0.02em; margin-bottom: 10px; }
+  .stats span { color: var(--soft); font-size: var(--s1); line-height: 1.45; display: block; max-width: 18em; }
+
+  /* ---------- flow diagram ---------- */
+  .flow { padding: 112px 0 104px; }
+  .diagram { margin-top: 56px; position: relative; }
+  .diagram svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .diagram .node rect { fill: var(--white); stroke: var(--ink); stroke-width: 1; }
+  .diagram .node.dark rect { fill: var(--ink); }
+  .diagram text { font-family: var(--mono); font-size: 13px; fill: var(--ink); }
+  .diagram .node.dark text { fill: var(--d-text); }
+  .diagram .k { fill: var(--soft); font-size: 11px; letter-spacing: .06em; }
+  .diagram .node.dark .k { fill: var(--d-soft); }
+  .diagram .wire { fill: none; stroke: var(--rule); stroke-width: 1.5; }
+  .diagram .pulse { fill: none; stroke: var(--seal); stroke-width: 1.5; stroke-dasharray: 10 400; animation: travel 4.2s linear infinite; }
+  .diagram .pulse.p2 { animation-delay: 1.4s; }
+  .diagram .pulse.p3 { animation-delay: 2.8s; }
+  .diagram .check { fill: none; stroke: var(--yes); stroke-width: 1.5; stroke-dasharray: 3 5; }
+  .diagram .hid { fill: var(--ink); }
+  @keyframes travel { from { stroke-dashoffset: 410; } to { stroke-dashoffset: 0; } }
+  .legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 22px; }
+  .legend b { font: 500 13px var(--mono); display: block; margin-bottom: 6px; }
+  .legend b i { font-style: normal; color: var(--soft); margin-right: 10px; }
+  .legend p { margin: 0; color: var(--soft); font-size: 16px; }
+
+  /* ---------- dark band: two views ---------- */
+  .band { background: var(--ink); color: var(--d-text); padding: 112px 0 112px; position: relative; overflow: hidden; }
+  .band::before { content: ""; position: absolute; inset: 0; opacity: .07; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .band .label { color: var(--d-soft); }
+  .band h2 em { color: var(--seal-lt); }
+  .band .sec-intro p { color: var(--d-soft); }
+  .views { display: grid; grid-template-columns: 1fr 88px 1fr; margin-top: 56px; position: relative; }
+  .view h3 { font: 13px var(--caps); letter-spacing: .16em; text-transform: uppercase; color: var(--d-soft); font-weight: 400; margin: 0 0 14px; }
+  .view .r { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--d-rule); font: 14px var(--mono); }
+  .view .r:first-of-type { border-top: 1px solid var(--d-text); }
+  .view .m { color: var(--d-soft); }
+  .view .bar { display: inline-block; width: 82px; height: 12px; background: repeating-linear-gradient(90deg, #3a352e 0 6px, #2c2823 6px 8px); vertical-align: middle; }
+  .view .sum { border-bottom: 0; padding-top: 16px; }
+  .view .red { color: var(--seal-lt); }
+  .bridge { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--d-soft); font: 12px var(--mono); padding-top: 30px; }
+  .bridge::before, .bridge::after { content: ""; width: 1px; flex: 1; background: var(--d-rule); }
+  .bridge img { width: 36px; height: 36px; }
+  .band .note { margin-top: 32px; color: var(--d-soft); font-size: var(--s2); max-width: 44em; }
+
+  /* ---------- ledger bento ---------- */
+  .bento-sec { padding: 112px 0; }
+  .bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 56px; }
+  .cell { background: var(--paper); padding: 26px 26px 28px; display: flex; flex-direction: column; gap: 16px; min-height: 260px; }
+  .cell.w3 { grid-column: span 3; } .cell.w2 { grid-column: span 2; } .cell.w4 { grid-column: span 4; }
+  .cell h3 { font-size: var(--s3); font-weight: 400; margin: 0; line-height: 1.25; }
+  .cell p { margin: 0; color: var(--soft); font-size: 16px; line-height: 1.5; }
+  .cell .viz { flex: 1; display: flex; align-items: center; min-height: 92px; font: 13px var(--mono); }
+  .viz-redact { width: 100%; display: grid; gap: 8px; }
+  .viz-redact div { display: grid; grid-template-columns: 1fr 70px; gap: 12px; color: var(--soft); }
+  .viz-redact span { height: 14px; background: var(--ink); align-self: center; }
+  .viz-total { font: 400 46px/1 var(--serif); letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 12px; }
+  .viz-total small { font: 13px var(--mono); color: var(--soft); letter-spacing: 0; }
+  .viz-dots { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .viz-dots i { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); display: block; }
+  .viz-dots i.x { background: none; border: 1.5px dashed var(--seal); position: relative; }
+  .viz-dots em { font-style: normal; color: var(--seal); margin-left: 6px; }
+  .viz-fp { width: 100%; display: grid; gap: 8px; }
+  .viz-fp code { display: block; padding: 10px 12px; background: var(--well); font-size: 12px; overflow-wrap: anywhere; }
+  .viz-fp .ok { color: var(--yes); }
+  .viz-keys { display: flex; align-items: center; gap: 14px; width: 100%; }
+  .viz-keys .box { border: 1px solid var(--ink); padding: 10px 12px; }
+  .viz-keys .line { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--ink) 0 4px, transparent 4px 8px); }
+  .viz-fan svg { width: 100%; height: 92px; display: block; }
+  .viz-fan path { fill: none; stroke: var(--ink); stroke-width: 1; }
+  .viz-fan circle { fill: var(--ink); }
+
+  /* ---------- checker ---------- */
+  .tool { display: grid; grid-template-columns: 4fr 7fr; gap: 72px; padding: 112px 0; border-top: 1px solid var(--rule); }
+  .tool .side p { color: var(--soft); margin: 14px 0 0; }
+  .panel { background: var(--white); box-shadow: var(--lift); border-radius: 3px; padding: 26px; }
+  .field-label { display: block; font: 13px var(--mono); color: var(--soft); margin-bottom: 8px; }
+  textarea, input { width: 100%; font: 14px/1.55 var(--mono); color: var(--ink); background: var(--well); border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 14px; }
+  textarea { min-height: 168px; resize: vertical; display: block; }
+  ::placeholder { color: var(--soft); opacity: .8; }
+  .row { display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+  .file { font: 15px var(--mono); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
+  .file input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .lines { font: 12px/1.9 var(--mono); color: var(--soft); margin-top: 18px; }
   .lines div { display: flex; justify-content: space-between; gap: 14px; white-space: nowrap; overflow: hidden; }
   .lines .addr { overflow: hidden; text-overflow: ellipsis; }
   .lines .amt { color: var(--ink); }
-
-  .ledger { margin-top: 22px; border-top: 1px solid var(--ink); }
-  .ledger div { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
-  .ledger dt { font: 13px var(--caps); letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); padding-top: 2px; }
+  .ledger { margin: 22px 0 0; border-top: 1px solid var(--ink); }
+  .ledger div { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--rule); }
+  .ledger dt { font: 13px var(--mono); color: var(--soft); }
   .ledger dd { margin: 0; font: 15px/1.5 var(--mono); overflow-wrap: anywhere; }
   .ledger .fp { color: var(--seal); }
-  dl { margin: 0; }
-
   .msg { margin-top: 14px; font-size: var(--s2); min-height: 1.6em; }
   .msg.yes { color: var(--yes); }
+  .msg.yes::before { content: "✓ "; }
   .msg.no { color: var(--ink); }
   .msg.no::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--seal); border-radius: 50%; margin: 0 10px 2px 0; }
   .errors { margin: 10px 0 0; padding: 0; list-style: none; font: 14px/1.6 var(--mono); }
   .errors li::before { content: "× "; color: var(--seal); }
   .errors:empty { display: none; }
 
-  .how { padding: 64px 0; border-bottom: 1px solid var(--rule); }
-  .how ol { list-style: none; margin: 18px 0 0; padding: 0; counter-reset: s; }
-  .how li { display: grid; grid-template-columns: 64px 220px 1fr; gap: 16px; padding: 18px 0; border-top: 1px solid var(--rule); counter-increment: s; }
-  .how li::before { content: counter(s, decimal-leading-zero); font: 14px var(--mono); color: var(--soft); padding-top: 4px; }
-  .how b { font-weight: 400; font-size: var(--s3); }
-  .how span { color: var(--soft); }
+  /* ---------- contract rules + terminal ---------- */
+  .rules-sec { padding: 112px 0; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 5fr 6fr; gap: 72px; align-items: start; }
+  .rules { list-style: none; margin: 28px 0 0; padding: 0; counter-reset: r; }
+  .rules li { counter-increment: r; display: grid; grid-template-columns: 44px 1fr; padding: 13px 0; border-top: 1px solid var(--rule); font-size: 16px; }
+  .rules li::before { content: counter(r, decimal-leading-zero); font: 13px var(--mono); color: var(--seal); padding-top: 3px; }
+  .term { background: var(--ink); color: #d9d4cb; font: 13px/1.75 var(--mono); border-radius: 4px; overflow: hidden; box-shadow: var(--lift); }
+  .term .bar { padding: 11px 18px; border-bottom: 1px solid var(--d-rule); color: #7d776d; font-size: 12px; display: flex; justify-content: space-between; }
+  .term pre { margin: 0; padding: 20px 22px 24px; overflow-x: auto; white-space: pre; }
+  .term .p { color: #7d776d; } .term .c { color: var(--d-text); } .term .ok { color: var(--yes-lt); } .term .fp { color: var(--seal-lt); }
 
-  footer { padding: 40px 0 64px; color: var(--soft); font-size: var(--s1); display: grid; grid-template-columns: 7fr 5fr; gap: 56px; }
-  footer p { margin: 0; }
+  /* ---------- closing ---------- */
+  .closing { background: var(--ink); color: var(--d-text); padding: 120px 0 0; overflow: hidden; position: relative; }
+  .closing h2 { font-size: clamp(36px, 5vw, 60px); max-width: 15em; }
+  .closing h2 em { color: var(--seal-lt); }
+  .closing .cta { margin-top: 36px; }
+  .closing .ghost { color: var(--d-text); }
+  .foot-grid { display: grid; grid-template-columns: 6fr 3fr 3fr; gap: 48px; margin-top: 96px; padding: 32px 0; border-top: 1px solid var(--d-rule); color: var(--d-soft); font-size: var(--s1); }
+  .foot-grid p { margin: 0; }
+  .foot-grid a { color: var(--d-text); }
+  .foot-grid b { display: block; font: 13px var(--caps); letter-spacing: .16em; text-transform: uppercase; color: var(--d-soft); font-weight: 400; margin-bottom: 10px; }
+  .bleed { display: block; width: 100%; height: auto; margin: 0 0 -3.5%; opacity: .95; }
 
-  @media (max-width: 820px) {
-    .hero, .tool, footer { grid-template-columns: 1fr; gap: 22px; }
-    .hero { padding: 48px 0 36px; }
-    .tool, .how { padding: 44px 0; }
-    .how li { grid-template-columns: 44px 1fr; }
-    .how li span { grid-column: 2; }
-  }
-  @media (max-width: 560px) {
-    .wrap { padding: 0 20px; }
-    .facts { grid-template-columns: 1fr; }
-    .facts div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--rule); }
-    .ledger div { grid-template-columns: 1fr; gap: 2px; }
-    .top nav a.hide-sm { display: none; }
-  }
-
-  /* ---------- hero with the sealing visual ---------- */
-  .hero { grid-template-columns: 6fr 6fr; gap: 64px; align-items: center; padding: 64px 0 64px; }
-  .hero h1 { font-size: clamp(var(--s5), 4.6vw, 52px); }
-  .hero > * { min-width: 0; }
-  .sheet .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-  .hero .lede { color: var(--soft); font-size: var(--s3); line-height: 1.5; margin: 20px 0 28px; max-width: 30em; text-wrap: pretty; }
-  .cta { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
-  .btn { font: 500 15px var(--mono); background: var(--ink); color: var(--paper); border-radius: 2px; padding: 12px 20px; text-decoration: none; transition: transform 160ms var(--ease-out); }
-  .btn:active { transform: scale(0.97); }
-  .cta .ghost { font: 15px var(--mono); }
-  @media (hover: hover) and (pointer: fine) { .btn:hover { background: var(--seal); } }
-
-  .sheet { position: relative; background: var(--well); padding: 26px 28px 24px; font: 14px/1 var(--mono); box-shadow: 0 1px 0 var(--rule), 0 24px 48px -28px rgba(22, 19, 15, 0.35); }
-  .sheet header { display: flex; justify-content: space-between; color: var(--soft); font-size: 12px; letter-spacing: 0.04em; padding-bottom: 14px; border-bottom: 1px solid var(--ink); }
-  .sheet .r { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--rule); align-items: center; }
-  .sheet .who { color: var(--ink); }
-  .sheet .who small { color: var(--soft); font-size: 12px; margin-left: 8px; }
-  .sheet .amt { position: relative; min-width: 92px; text-align: right; color: var(--ink); }
-  .sheet .amt i { font-style: normal; display: inline-block; animation: hush 7s var(--ease-out) infinite; animation-delay: calc(var(--i) * 0.32s); }
-  .sheet .amt::after { content: ""; position: absolute; inset: -3px -4px; background: var(--ink); transform-origin: left; transform: scaleX(0); animation: redact 7s var(--ease-out) infinite; animation-delay: calc(var(--i) * 0.32s); }
-  .sheet .foot { display: grid; grid-template-columns: 1fr auto; padding-top: 16px; gap: 12px; align-items: end; }
-  .sheet .foot span { color: var(--soft); font-size: 12px; display: block; margin-bottom: 6px; letter-spacing: 0.04em; }
-  .sheet .total { font-size: 18px; }
-  .sheet .fp { color: var(--seal); font-size: 12px; overflow-wrap: anywhere; line-height: 1.5; opacity: 0; animation: fpin 7s var(--ease-out) infinite; }
-  .stamp { position: absolute; right: -26px; top: -30px; width: 112px; height: 112px; opacity: 0; animation: stamp 7s var(--ease-out) infinite; filter: drop-shadow(0 6px 10px rgba(194, 54, 29, 0.25)); }
-  .stamp img { width: 100%; height: 100%; display: block; transform: rotate(-12deg); }
-  @keyframes redact { 0%, 6% { transform: scaleX(0); } 14%, 84% { transform: scaleX(1); } 92%, 100% { transform: scaleX(0); } }
-  @keyframes hush { 0%, 6% { filter: blur(0); } 12%, 86% { filter: blur(3px); } 92%, 100% { filter: blur(0); } }
-  @keyframes stamp { 0%, 44% { opacity: 0; transform: scale(1.35); } 50% { opacity: 1; transform: scale(0.96); } 54%, 84% { opacity: 1; transform: scale(1); } 92%, 100% { opacity: 0; transform: scale(1); } }
-  @keyframes fpin { 0%, 50% { opacity: 0; } 58%, 84% { opacity: 1; } 92%, 100% { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) {
-    .sheet .amt i, .sheet .amt::after, .stamp, .sheet .fp { animation: none; }
+    .sheet .amt i, .sheet .amt::after, .stamp, .sheet .fp, .rise, .diagram .pulse { animation: none; }
     .sheet .amt::after { transform: scaleX(1); }
     .stamp, .sheet .fp { opacity: 1; }
+    .diagram .pulse { display: none; }
   }
-
-  /* ---------- two views: a full-bleed ink band ---------- */
-  .band { margin: 0 calc(50% - 50vw); background: #16130f; color: #eeebe5; padding: 88px 0 92px; }
-  .band .wrap { max-width: 1040px; }
-  .band .label { color: #a59f95; }
-  .band h2 { font-size: var(--s5); line-height: 1.15; margin: 12px 0 0; max-width: 18em; }
-  .band h2 em { color: #e0533a; font-style: italic; }
-  .views { display: grid; grid-template-columns: 1fr 72px 1fr; margin-top: 48px; align-items: stretch; }
-  .view h3 { font: 13px var(--caps); letter-spacing: 0.16em; text-transform: uppercase; color: #a59f95; font-weight: 400; margin: 0 0 14px; }
-  .view .r { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 12px 0; border-bottom: 1px solid #34302a; font: 14px var(--mono); }
-  .view .r:first-of-type { border-top: 1px solid #eeebe5; }
-  .view .r b { font-weight: 400; }
-  .view .muted { color: #a59f95; }
-  .view .bar { display: inline-block; width: 74px; height: 12px; background: #34302a; vertical-align: middle; }
-  .view .sum { border-bottom: 0; padding-top: 16px; }
-  .view .sum .red { color: #e0533a; font-size: 12px; }
-  .bridge { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #a59f95; font: 12px var(--mono); }
-  .bridge::before, .bridge::after { content: ""; width: 1px; flex: 1; background: #34302a; }
-  .bridge img { width: 34px; height: 34px; }
-  .note { margin-top: 28px; color: #a59f95; font-size: var(--s1); max-width: 40em; }
-
-  /* ---------- terminal ---------- */
-  .run { padding: 64px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 4fr 8fr; gap: 56px; align-items: start; }
-  .run .side p { color: var(--soft); margin: 0 0 12px; }
-  .term { background: #16130f; color: #d9d4cb; font: 13px/1.7 var(--mono); border-radius: 4px; overflow: hidden; box-shadow: 0 24px 48px -28px rgba(22, 19, 15, 0.45); }
-  .term .bar { padding: 10px 16px; border-bottom: 1px solid #34302a; color: #7d776d; font-size: 12px; display: flex; justify-content: space-between; }
-  .term pre { margin: 0; padding: 18px 20px 22px; overflow-x: auto; white-space: pre; }
-  .term .p { color: #7d776d; }
-  .term .c { color: #eeebe5; }
-  .term .ok { color: #6cc48f; }
-  .term .fp { color: #e0533a; }
-
-  @media (max-width: 820px) {
-    .views { grid-template-columns: 1fr; gap: 0; }
-    .bridge { flex-direction: row; padding: 22px 0; }
+  @media (max-width: 960px) {
+    .hero, .sec-intro, .tool, .rules-sec { grid-template-columns: 1fr; gap: 36px; }
+    .hero { padding: 40px 0 64px; gap: 64px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .stats div:nth-child(3) { padding-left: 0; border-left: 0; }
+    .stats div:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .bento { grid-template-columns: 1fr 1fr; }
+    .cell.w3, .cell.w2, .cell.w4 { grid-column: span 2; }
+    .legend { grid-template-columns: 1fr; gap: 18px; }
+    .views { grid-template-columns: 1fr; }
+    .bridge { flex-direction: row; padding: 26px 0; }
     .bridge::before, .bridge::after { width: auto; height: 1px; }
-    .run { grid-template-columns: 1fr; gap: 22px; padding: 44px 0; }
-    .band { padding: 64px 0; }
-    .stamp { right: -6px; top: -36px; width: 88px; height: 88px; }
+    .foot-grid { grid-template-columns: 1fr; gap: 28px; }
+    .flow, .band, .bento-sec, .tool, .rules-sec { padding-top: 80px; padding-bottom: 80px; }
+    .closing { padding-top: 88px; }
   }
-  @media (max-width: 820px) { .hero { grid-template-columns: 1fr; gap: 48px; padding: 40px 0 48px; } .sheet { margin-right: 14px !important; } }
-  @media (max-width: 560px) { .band .wrap { padding: 0 20px; } .sheet { padding: 22px 18px 20px; } }
-  [hidden] { display: none !important; }
+  @media (max-width: 600px) {
+    .wrap { padding: 0 20px; }
+    .nav nav .hide-sm { display: none; }
+    .stats { grid-template-columns: 1fr; }
+    .stats div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--rule); }
+    .stamp { right: -8px; top: -40px; width: 84px; height: 84px; }
+    .receipt { left: 14px; right: 0; }
+    .receipt .grid { grid-template-columns: 1fr 1fr; }
+    .sheet { padding: 22px 18px 20px; }
+    .ledger div { grid-template-columns: 1fr; gap: 2px; }
+    .panel { padding: 18px; }
+    h2 { font-size: var(--s5); }
+    .diagram-scroll { overflow-x: auto; margin: 0 -20px; padding: 0 20px; }
+    .diagram-scroll svg { min-width: 760px; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <picture>
-      <source srcset="brand/tacita-logo-dark.svg" media="(prefers-color-scheme: dark)">
-      <img src="brand/tacita-logo.svg" alt="tacita" width="106" height="28">
-    </picture>
-    <nav><a href="#check">check a list</a><a class="hide-sm" href="#views">two views</a><a class="hide-sm" href="#how">how it works</a><a href="https://github.com/hackid02/tacita">source</a></nav>
-  </header>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a href="#" aria-label="tacita home"><img src="brand/tacita-logo.svg" alt="tacita" width="98" height="26"></a>
+    <nav><a class="hide-sm" href="#flow">how it works</a><a class="hide-sm" href="#views">privacy</a><a href="#check">check a list</a><a class="gh" href="https://github.com/hackid02/tacita">github</a></nav>
+  </div>
+</header>
 
+<main>
+<div class="wrap">
   <section class="hero">
     <div>
-      <div class="label">private payouts on tari ootle</div>
-      <h1>pay the whole round privately. <em>let anyone check it was fair.</em></h1>
-      <p class="lede">built for bounty and ambassador rounds. nobody sees who got how much, and everyone can check the winners list wasn't changed after it was locked.</p>
-      <div class="cta"><a class="btn" href="#check">check a list</a><a class="ghost" href="#views">see what the chain sees</a></div>
+      <div class="label rise" style="--d:0">private payouts on tari ootle</div>
+      <h1 class="rise" style="--d:1">pay the whole round privately. <em>let anyone check it was fair.</em></h1>
+      <p class="lede rise" style="--d:2">for bounty and ambassador rounds. one transaction pays every winner, nobody sees who got how much, and everyone can check the winners list wasn't changed after it was locked.</p>
+      <div class="cta rise" style="--d:3"><a class="btn" href="#check">check a list <span aria-hidden="true">→</span></a><a class="ghost" href="#flow">see how a round moves</a></div>
+      <div class="trust rise" style="--d:4"><span>open source, mit</span><span>runs on tari ootle</span><span>your keys never leave your wallet</span></div>
     </div>
-    <figure class="sheet" aria-label="an example round: five winners whose amounts get hidden, then the round is sealed with a fingerprint" style="margin:0">
-      <header><span>EXAMPLE ROUND · 5 AMBASSADORS</span></header>
-      <div class="r"><span class="who">@kemi <small>otl_1cscp…dxq</small></span><span class="amt" style="--i:0"><i>1.50</i></span></div>
-      <div class="r"><span class="who">@tolu <small>otl_15gsu…9g</small></span><span class="amt" style="--i:1"><i>0.75</i></span></div>
-      <div class="r"><span class="who">@sam <small>otl_1s38t…uu</small></span><span class="amt" style="--i:2"><i>2.00</i></span></div>
-      <div class="r"><span class="who">@lina <small>otl_1x7qe…k4</small></span><span class="amt" style="--i:3"><i>0.40</i></span></div>
-      <div class="r"><span class="who">@obi <small>otl_1m2wd…ra</small></span><span class="amt" style="--i:4"><i>0.35</i></span></div>
-      <div class="foot">
-        <div><span>LOCKED FINGERPRINT</span><div class="fp">143c8a9cc3b5955d931a9e25c1fdf2c662cadcb91658bbe4e1c6e499c2612ba1</div></div>
-        <div style="text-align:right"><span>TOTAL</span><div class="total">5.00 TARI</div></div>
-      </div>
-      <div class="stamp" aria-hidden="true"><img src="brand/tacita-mark.svg" alt=""></div>
-    </figure>
+    <div class="stack rise" style="--d:2">
+      <figure class="sheet" style="margin:0" aria-label="an example round: five winners whose amounts get hidden, then the round is sealed with a fingerprint">
+        <header><span>EXAMPLE ROUND · AMBASSADORS</span><span>05</span></header>
+        <div class="r"><span class="who">@kemi <small>otl_1cscp…dxq</small></span><span class="amt" style="--i:0"><i>1.50</i></span></div>
+        <div class="r"><span class="who">@tolu <small>otl_15gsu…9g</small></span><span class="amt" style="--i:1"><i>0.75</i></span></div>
+        <div class="r"><span class="who">@sam <small>otl_1s38t…uu</small></span><span class="amt" style="--i:2"><i>2.00</i></span></div>
+        <div class="r"><span class="who">@lina <small>otl_1x7qe…k4</small></span><span class="amt" style="--i:3"><i>0.40</i></span></div>
+        <div class="r"><span class="who">@obi <small>otl_1m2wd…ra</small></span><span class="amt" style="--i:4"><i>0.35</i></span></div>
+        <div class="foot">
+          <div><span>LOCKED FINGERPRINT</span><div class="fp">143c8a9cc3b5955d931a9e25c1fdf2c662cadcb91658bbe4e1c6e499c2612ba1</div></div>
+          <div style="text-align:right"><span>TOTAL</span><div class="total">5.00 TARI</div></div>
+        </div>
+        <div class="stamp" aria-hidden="true"><img src="brand/tacita-mark.svg" alt=""></div>
+      </figure>
+      <dl class="receipt" aria-label="what the chain records for this round">
+        <div class="top"><span>ON CHAIN</span><span class="badge">valid</span></div>
+        <div class="grid">
+          <div><dt>outputs</dt><dd>5 hidden</dd></div>
+          <div><dt>amounts</dt><dd>hidden</dd></div>
+          <div><dt>total</dt><dd>5.00 TARI</dd></div>
+          <div><dt>paid</dt><dd>once</dd></div>
+        </div>
+      </dl>
+    </div>
   </section>
 
-  <div class="facts">
-    <div><b>16</b><span>winners paid in one transaction</span></div>
-    <div><b>total</b><span>is the only amount made public, never each share</span></div>
-    <div><b>1</b><span>fingerprint locks the list before payout</span></div>
+  <div class="stats">
+    <div><b>16</b><span>winners paid in a single transaction</span></div>
+    <div><b>1</b><span>fingerprint locks the list before anyone is paid</span></div>
+    <div><b>7</b><span>rules the contract checks on every payout</span></div>
+    <div><b>0</b><span>keys handed to tacita. your wallet signs.</span></div>
   </div>
+</div>
 
-  <section class="band" id="views" aria-labelledby="views-h">
-    <div class="wrap">
-      <div class="label">two views of the same round</div>
-      <h2 id="views-h">you see the list. the chain sees <em>only what it needs</em> to prove it was paid right.</h2>
-      <div class="views">
-        <div class="view">
-          <h3>what the organiser holds</h3>
-          <div class="r"><b>@kemi</b><span>1.50</span></div>
-          <div class="r"><b>@tolu</b><span>0.75</span></div>
-          <div class="r"><b>@sam</b><span>2.00</span></div>
-          <div class="r"><b>@lina</b><span>0.40</span></div>
-          <div class="r"><b>@obi</b><span>0.35</span></div>
-          <div class="r sum"><span class="muted">total</span><span>5.00 TARI</span></div>
-        </div>
-        <div class="bridge" aria-hidden="true"><img src="brand/tacita-mark.svg" alt=""><span>sealed</span></div>
-        <div class="view">
-          <h3>what the chain shows</h3>
-          <div class="r"><span class="muted">hidden output 1</span><span class="bar"></span></div>
-          <div class="r"><span class="muted">hidden output 2</span><span class="bar"></span></div>
-          <div class="r"><span class="muted">hidden output 3</span><span class="bar"></span></div>
-          <div class="r"><span class="muted">hidden output 4</span><span class="bar"></span></div>
-          <div class="r"><span class="muted">hidden output 5</span><span class="bar"></span></div>
-          <div class="r sum"><span class="muted">total, locked before payout</span><span>5.00 TARI</span></div>
-          <div class="r sum" style="padding-top:4px"><span class="muted">list fingerprint</span><span class="red">143c8a9c…612ba1</span></div>
-        </div>
-      </div>
-      <p class="note">each hidden output can only be opened by its winner. the contract checks that the outputs add up to the locked total and that there's exactly one per winner, so nobody can be skipped or quietly paid more.</p>
+<section class="flow" id="flow" aria-labelledby="flow-h">
+  <div class="wrap">
+    <div class="sec-intro">
+      <div><div class="label">how a round moves</div><h2 id="flow-h">locked first, <em>paid once,</em> checkable forever.</h2></div>
+      <p>the organiser locks the total and the list's fingerprint in a campaign contract. one payout sends a hidden output to each winner. anyone holding the list can check it against what was locked.</p>
     </div>
-  </section>
+    <div class="diagram"><div class="diagram-scroll"><svg viewBox="0 0 1056 340" role="img" aria-label="diagram: the organiser's wallet funds a campaign contract that locks the total and the list fingerprint, the contract pays five hidden outputs, each winner opens only their own, and anyone with the list checks it against the fingerprint">
+  <path class="wire" d="M180 150 H300"/><path class="wire" d="M520 150 C580 150 580 46 640 46 M790 46 C835 46 835 150 880 150"/><path class="wire" d="M520 150 C580 150 580 98 640 98 M790 98 C835 98 835 150 880 150"/><path class="wire" d="M520 150 C580 150 580 150 640 150 M790 150 C835 150 835 150 880 150"/><path class="wire" d="M520 150 C580 150 580 202 640 202 M790 202 C835 202 835 150 880 150"/><path class="wire" d="M520 150 C580 150 580 254 640 254 M790 254 C835 254 835 150 880 150"/>
+  <path class="check" d="M410 260 V214"/>
+  <path class="pulse " pathLength="400" d="M180 150 H520 C580 150 580 46 640 46 H790 C835 46 835 150 880 150"/><path class="pulse p2" pathLength="400" d="M180 150 H520 C580 150 580 150 640 150 H790 C835 150 835 150 880 150"/><path class="pulse p3" pathLength="400" d="M180 150 H520 C580 150 580 254 640 254 H790 C835 254 835 150 880 150"/>
+  <g class="node"><rect x="0" y="110" width="180" height="80"/><text class="k" x="16" y="136">ORGANISER</text><text x="16" y="160">your ootle wallet</text><text x="16" y="178" class="k" style="letter-spacing:0">signs, pays the fee</text></g>
+  <g class="node dark"><rect x="300" y="86" width="220" height="128"/><text class="k" x="316" y="112">CAMPAIGN CONTRACT</text><text x="316" y="140">total  5.00 TARI</text><text x="316" y="162">winners  5</text><text x="316" y="190" style="fill:#e0533a">fp 143c8a9c…612ba1</text></g>
+  <g class="node"><rect x="640" y="30" width="150" height="32"/><text x="654" y="50">output 1</text><rect class="hid" x="738" y="41" width="40" height="10" style="stroke:none"/></g><g class="node"><rect x="640" y="82" width="150" height="32"/><text x="654" y="102">output 2</text><rect class="hid" x="738" y="93" width="40" height="10" style="stroke:none"/></g><g class="node"><rect x="640" y="134" width="150" height="32"/><text x="654" y="154">output 3</text><rect class="hid" x="738" y="145" width="40" height="10" style="stroke:none"/></g><g class="node"><rect x="640" y="186" width="150" height="32"/><text x="654" y="206">output 4</text><rect class="hid" x="738" y="197" width="40" height="10" style="stroke:none"/></g><g class="node"><rect x="640" y="238" width="150" height="32"/><text x="654" y="258">output 5</text><rect class="hid" x="738" y="249" width="40" height="10" style="stroke:none"/></g>
+  <g class="node"><rect x="880" y="110" width="176" height="80"/><text class="k" x="896" y="136">WINNERS</text><text x="896" y="160">each opens only</text><text x="896" y="178">their own output</text></g>
+  <g class="node"><rect x="300" y="260" width="220" height="56" style="stroke:#2c6a45;stroke-dasharray:4 4"/><text class="k" x="316" y="282">ANYONE WITH THE LIST</text><text x="316" y="302" style="fill:#2c6a45">sha-256 → match ✓</text></g>
+</svg></div></div>
+    <div class="legend">
+      <div><b><i>01</i>lock</b><p>tacita create puts the total and the sha-256 fingerprint of the winners list into a new campaign, funded up front.</p></div>
+      <div><b><i>02</i>pay</b><p>tacita pay sends one hidden output per winner. the contract refuses any payout that misses the locked total or headcount.</p></div>
+      <div><b><i>03</i>check</b><p>anyone with the list recomputes the fingerprint, here in the browser or with the cli, and compares.</p></div>
+    </div>
+  </div>
+</section>
 
+<section class="band" id="views" aria-labelledby="views-h">
+  <div class="wrap">
+    <div class="sec-intro">
+      <div><div class="label">two views of the same round</div><h2 id="views-h">you hold the list. the chain holds <em>only the proof.</em></h2></div>
+      <p>no leaked spreadsheet of who earned what, and no "trust me" screenshot of the payout either.</p>
+    </div>
+    <div class="views">
+      <div class="view">
+        <h3>what the organiser holds</h3>
+        <div class="r"><b style="font-weight:400">@kemi</b><span>1.50</span></div>
+        <div class="r"><b style="font-weight:400">@tolu</b><span>0.75</span></div>
+        <div class="r"><b style="font-weight:400">@sam</b><span>2.00</span></div>
+        <div class="r"><b style="font-weight:400">@lina</b><span>0.40</span></div>
+        <div class="r"><b style="font-weight:400">@obi</b><span>0.35</span></div>
+        <div class="r sum"><span class="m">total</span><span>5.00 TARI</span></div>
+      </div>
+      <div class="bridge" aria-hidden="true"><img src="brand/tacita-mark.svg" alt=""><span>sealed</span></div>
+      <div class="view">
+        <h3>what the chain shows</h3>
+        <div class="r"><span class="m">hidden output 1</span><span class="bar"></span></div>
+        <div class="r"><span class="m">hidden output 2</span><span class="bar"></span></div>
+        <div class="r"><span class="m">hidden output 3</span><span class="bar"></span></div>
+        <div class="r"><span class="m">hidden output 4</span><span class="bar"></span></div>
+        <div class="r"><span class="m">hidden output 5</span><span class="bar"></span></div>
+        <div class="r sum"><span class="m">total, locked before payout</span><span>5.00 TARI</span></div>
+        <div class="r sum" style="padding-top:2px"><span class="m">list fingerprint</span><span class="red">143c8a9c…612ba1</span></div>
+      </div>
+    </div>
+    <p class="note">each hidden output can only be opened by its winner. the contract checks the outputs add up to the locked total, one per winner, so nobody can be skipped or quietly paid more.</p>
+  </div>
+</section>
+
+<section class="bento-sec" aria-labelledby="bento-h">
+  <div class="wrap">
+    <div class="sec-intro">
+      <div><div class="label">what you get</div><h2 id="bento-h">private where it should be, <em>public where it counts.</em></h2></div>
+      <p>built from running real ambassador rounds, where the two complaints are always the same: "everyone saw my payout" and "how do we know it was fair".</p>
+    </div>
+    <div class="bento">
+      <div class="cell w4"><div class="viz"><div class="viz-redact"><div>@kemi otl_1cscp…dxq<span></span></div><div>@tolu otl_15gsu…9g<span></span></div><div>@sam otl_1s38t…uu<span></span></div></div></div><h3>hidden amounts</h3><p>every payout is a stealth output. only its winner can open it, not other winners, not observers.</p></div>
+      <div class="cell w2"><div class="viz"><div class="viz-total">5.00<small>TARI locked</small></div></div><h3>a locked total</h3><p>funded up front. the payout has to equal it exactly.</p></div>
+      <div class="cell w2"><div class="viz"><div class="viz-dots"><i></i><i></i><i></i><i></i><i></i><i class="x"></i><em>refused</em></div></div><h3>an exact headcount</h3><p>one output per winner. a sixth output on a five-person round fails.</p></div>
+      <div class="cell w2"><div class="viz"><div class="viz-fp"><code>143c8a9c…612ba1</code><span class="ok">✓ matches the locked list</span></div></div><h3>a checkable list</h3><p>a sha-256 fingerprint anyone can recompute from the list.</p></div>
+      <div class="cell w2"><div class="viz"><div class="viz-keys"><div class="box">your wallet</div><div class="line"></div><div class="box">tacita</div></div></div><h3>keys stay home</h3><p>tacita builds the transaction. your wallet signs and pays the fee.</p></div>
+      <div class="cell w3"><div class="viz viz-fan"><svg viewBox="0 0 300 92" aria-hidden="true"><circle cx="12" cy="46" r="6"/><path d="M18 46 C120 46 150 8 288 8"/><circle cx="288" cy="8" r="3"/><path d="M18 46 C120 46 150 21 288 21"/><circle cx="288" cy="21" r="3"/><path d="M18 46 C120 46 150 33 288 33"/><circle cx="288" cy="33" r="3"/><path d="M18 46 C120 46 150 46 288 46"/><circle cx="288" cy="46" r="3"/><path d="M18 46 C120 46 150 58 288 58"/><circle cx="288" cy="58" r="3"/><path d="M18 46 C120 46 150 71 288 71"/><circle cx="288" cy="71" r="3"/><path d="M18 46 C120 46 150 84 288 84"/><circle cx="288" cy="84" r="3"/></svg></div><h3>one transaction</h3><p>up to 16 winners per round, paid together. no drip of separate transfers to watch.</p></div>
+      <div class="cell w3"><div class="viz"><div class="viz-total" style="font-size:38px">mit<small>open source</small></div></div><h3>open and readable</h3><p>the contract, the cli and this page are open source. the page is one html file, so you can read the code you're trusting.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
   <section class="tool" id="check" aria-labelledby="check-h">
     <div class="side">
       <div class="label">check a list</div>
-      <h2 id="check-h">does your list match the round?</h2>
+      <h2 id="check-h">does your list match <em>the round?</em></h2>
       <p>paste the winners list, one <code>address,amount</code> per line, amounts in TARI.</p>
       <p>it's worked out in your browser. nothing is uploaded.</p>
     </div>
-    <div>
-      <textarea id="list" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="winners list" placeholder="# round 1&#10;otl_1abc...,1.5&#10;otl_1def...,0.75"></textarea>
+    <div class="panel">
+      <label class="field-label" for="list">winners list</label>
+      <textarea id="list" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="# round 1&#10;otl_1abc...,1.5&#10;otl_1def...,0.75"></textarea>
       <div class="row">
-        <button id="go">check list</button>
+        <button class="btn" id="go">check list</button>
         <label class="file">open a file<input id="file" type="file" accept=".csv,.txt,text/plain"></label>
         <button class="ghost" id="sample" type="button">try a sample</button>
       </div>
-
       <div aria-live="polite">
         <div class="lines" id="lines" aria-hidden="true"></div>
         <dl class="ledger" id="result" hidden>
@@ -305,57 +422,64 @@
       </div>
       <div id="msg" class="msg" role="status"></div>
       <ul id="errors" class="errors"></ul>
-
-      <div id="cmp-box" hidden style="margin-top:34px">
-        <div class="label" style="margin-bottom:10px">compare with the campaign</div>
-        <input id="expected" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="campaign fingerprint" placeholder="paste the fingerprint the campaign locked on chain">
-        <div class="row"><button id="compare">compare</button></div>
+      <div id="cmp-box" hidden style="margin-top:30px">
+        <label class="field-label" for="expected">fingerprint the campaign locked on chain</label>
+        <input id="expected" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="64 characters, 0-9 and a-f">
+        <div class="row"><button class="btn" id="compare">compare</button></div>
         <div id="cmp" class="msg" role="status"></div>
       </div>
     </div>
   </section>
 
-  <section class="run" aria-labelledby="run-h">
-    <div class="side">
-      <div class="label">the tool</div>
-      <h2 id="run-h">one command pays the round.</h2>
-      <p>tacita is a small command line tool. it talks to your own ootle wallet, which signs and pays the fee. tacita never sees your keys.</p>
-      <p>add <code>--dry-run</code> to see the transaction before anything is sent.</p>
+  <section class="rules-sec" aria-labelledby="rules-h">
+    <div>
+      <div class="label">the contract</div>
+      <h2 id="rules-h">seven rules, <em>checked on chain</em> every payout.</h2>
+      <ol class="rules">
+        <li>only the campaign owner can pay</li>
+        <li>a round can only be paid once</li>
+        <li>exactly one hidden output per winner, up to 16</li>
+        <li>no output carries a viewable balance proof</li>
+        <li>no output promises a minimum value</li>
+        <li>nothing is paid out in the clear</li>
+        <li>the amount taken from the vault equals the locked total</li>
+      </ol>
     </div>
-    <div class="term" role="img" aria-label="terminal output of tacita check and tacita pay">
-      <div class="bar"><span>tacita</span><span>real output · sample round</span></div>
+    <div class="term" role="img" aria-label="terminal output of tacita check and a dry run of tacita pay">
+      <div class="bar"><span>tacita cli</span><span>real output · sample round</span></div>
 <pre><span class="p">&gt;</span> <span class="c">tacita check --winners sample.csv</span>
 winners:       3
 total:         4.25 TARI
-manifest root: <span class="fp">143c8a9cc3b5955d931a9e25c1fdf2c662cadcb91658bbe4e1c6e499c2612ba1</span>
+manifest root: <span class="fp">143c8a9cc3b5955d931a9e25c1fdf2c6…</span>
 
 <span class="ok">ok: the winners file is valid.</span>
 
-<span class="p">&gt;</span> <span class="c">tacita pay --campaign component_5286…fe36 --winners sample.csv --dry-run</span>
+<span class="p">&gt;</span> <span class="c">tacita pay --campaign component_5286…fe36 \
+    --winners sample.csv --dry-run</span>
 winners:       3
 total:         4.25 TARI
-manifest root: <span class="fp">143c8a9cc3b5955d931a9e25c1fdf2c662cadcb91658bbe4e1c6e499c2612ba1</span>
-<span class="ok">hidden payout built and checked: 3 outputs, nothing revealed.</span>
-[ { "CallMethod": { "method": "pay", "args": [ { "Literal": "8482801a…" } ] } } ]</pre>
+<span class="ok">hidden payout built and checked: 3 outputs,
+nothing revealed.</span>
+[ { "CallMethod": { "method": "pay", "args": [ … ] } } ]</pre>
     </div>
   </section>
-
-  <section class="how" id="how" aria-labelledby="how-h">
-    <div class="label">how it works</div>
-    <h2 id="how-h">three steps, all on chain.</h2>
-    <ol>
-      <li><b>lock</b><span>the organiser puts the round's total and the list's fingerprint on chain before anyone is paid.</span></li>
-      <li><b>pay</b><span>one transaction pays every winner. each amount is hidden, and the contract refuses any payout that doesn't add up to the locked total or the locked headcount.</span></li>
-      <li><b>check</b><span>anyone holding the list can confirm it's the one that was locked. no screenshots, no "trust me".</span></li>
-    </ol>
-  </section>
-
-  <footer>
-    <p>what this proves: the campaign locked this exact total for this exact list before anyone was paid, and paid exactly that many people. what it doesn't show is who got how much. that stays private, which is the point. one honest limit: in a very small round, shares are easier to guess from the total.</p>
-    <p>named after tacita, the roman goddess of silence. open source under mit. <a href="https://github.com/hackid02/tacita">github.com/hackid02/tacita</a></p>
-  </footer>
 </div>
 
+<section class="closing" aria-labelledby="close-h">
+  <div class="wrap">
+    <div class="label" style="color:var(--d-soft)">run your next round on tacita</div>
+    <h2 id="close-h">the amounts stay silent. <em>the total is always proven.</em></h2>
+    <div class="cta"><a class="btn light" href="https://github.com/hackid02/tacita">get the cli <span aria-hidden="true">→</span></a><a class="ghost" href="#check">check a list</a></div>
+    <div class="foot-grid">
+      <p>what this proves: the campaign locked this exact total for this exact list before anyone was paid, and paid exactly that many people. what it doesn't show is who got how much. one honest limit: in a very small round, shares are easier to guess from the total.</p>
+      <div><b>project</b><a href="https://github.com/hackid02/tacita">source on github</a><br><a href="#flow">how it works</a></div>
+      <div><b>about</b>named after tacita, the roman goddess of silence. built for the tari ootle build contest.</div>
+    </div>
+  </div>
+  <svg class="bleed" aria-hidden="true" style="color:#221e19" xmlns="http://www.w3.org/2000/svg" viewBox="82.00 18.50 159.40 27" ><g fill="currentColor"><g transform="translate(82 45) scale(0.018131)"><path d="M520 -1346Q402 -1346 307.0 -1335.5Q212 -1325 143 -1313Q63 -1298 0 -1280L29 -1442Q41 -1441 65.0 -1440.0Q89 -1439 118.5 -1438.0Q148 -1437 180.5 -1436.5Q213 -1436 242.0 -1435.5Q271 -1435 293.5 -1434.5Q316 -1434 326 -1434H897Q907 -1434 929.5 -1434.5Q952 -1435 981.0 -1435.5Q1010 -1436 1042.5 -1436.5Q1075 -1437 1104.5 -1438.0Q1134 -1439 1158.0 -1440.0Q1182 -1441 1194 -1442L1223 -1280Q1159 -1298 1079 -1313Q1010 -1325 915.0 -1335.5Q820 -1346 702 -1346V-391Q702 -306 704.5 -242.5Q707 -179 710.5 -133.0Q714 -87 719.5 -56.0Q725 -25 731 -4V0H492V-4Q498 -25 503.0 -56.0Q508 -87 512.0 -133.0Q516 -179 518.0 -242.5Q520 -306 520 -391Z M2685.6800000000003 0V-4Q2687.6800000000003 -9 2688.6800000000003 -19.0Q2689.6800000000003 -29 2689.6800000000003 -37Q2689.6800000000003 -68 2681.1800000000003 -105.5Q2672.6800000000003 -143 2648.6800000000003 -199L2527.6800000000003 -471Q2471.6800000000003 -473 2378.6800000000003 -473.0Q2285.6800000000003 -473 2177.6800000000003 -473Q2098.6800000000003 -473 2025.1800000000003 -473.0Q1951.68 -473 1892.68 -471L1777.68 -207Q1762.68 -170 1745.68 -126.0Q1728.68 -82 1728.68 -37Q1728.68 -24 1730.68 -15.5Q1732.68 -7 1734.68 -4V0H1530.68V-4Q1548.68 -23 1575.68 -71.5Q1602.68 -120 1634.68 -193L2207.6800000000003 -1464H2287.6800000000003L2830.6800000000003 -242Q2849.6800000000003 -199 2870.1800000000003 -158.5Q2890.6800000000003 -118 2908.6800000000003 -86.0Q2926.6800000000003 -54 2940.6800000000003 -32.0Q2954.6800000000003 -10 2959.6800000000003 -4V0ZM2037.68 -559Q2095.6800000000003 -559 2156.6800000000003 -559.5Q2217.6800000000003 -560 2276.1800000000003 -560.5Q2334.6800000000003 -561 2388.6800000000003 -561.5Q2442.6800000000003 -562 2486.6800000000003 -563L2205.6800000000003 -1198L1929.68 -559Z M4570.360000000001 -1214 4561.360000000001 -1210Q4483.360000000001 -1282 4373.860000000001 -1325.0Q4264.360000000001 -1368 4133.360000000001 -1368Q4007.36 -1368 3902.36 -1328.5Q3797.36 -1289 3721.86 -1214.0Q3646.36 -1139 3604.36 -1030.0Q3562.36 -921 3562.36 -782Q3562.36 -629 3602.36 -496.5Q3642.36 -364 3721.36 -267.0Q3800.36 -170 3918.86 -114.5Q4037.36 -59 4195.360000000001 -59Q4252.360000000001 -59 4309.360000000001 -71.0Q4366.360000000001 -83 4418.860000000001 -106.5Q4471.360000000001 -130 4517.860000000001 -163.5Q4564.360000000001 -197 4602.360000000001 -240L4613.360000000001 -233L4533.360000000001 -29Q4458.360000000001 0 4367.860000000001 15.5Q4277.360000000001 31 4185.360000000001 31Q4000.36 31 3846.86 -22.5Q3693.36 -76 3582.86 -174.0Q3472.36 -272 3410.86 -409.5Q3349.36 -547 3349.36 -715Q3349.36 -810 3373.86 -902.0Q3398.36 -994 3445.36 -1077.0Q3492.36 -1160 3561.36 -1229.5Q3630.36 -1299 3718.86 -1350.0Q3807.36 -1401 3913.86 -1429.5Q4020.36 -1458 4144.360000000001 -1458Q4337.360000000001 -1458 4502.360000000001 -1399Z M5133.04 -4Q5139.04 -25 5144.04 -56.0Q5149.04 -87 5153.04 -133.0Q5157.04 -179 5159.04 -242.5Q5161.04 -306 5161.04 -391V-1042Q5161.04 -1127 5159.04 -1190.5Q5157.04 -1254 5153.04 -1300.5Q5149.04 -1347 5144.04 -1378.0Q5139.04 -1409 5133.04 -1430V-1434H5372.04V-1430Q5366.04 -1409 5360.54 -1378.0Q5355.04 -1347 5351.54 -1300.5Q5348.04 -1254 5345.54 -1190.5Q5343.04 -1127 5343.04 -1042V-391Q5343.04 -306 5345.54 -242.5Q5348.04 -179 5351.54 -133.0Q5355.04 -87 5360.54 -56.0Q5366.04 -25 5372.04 -4V0H5133.04Z M6371.72 -1346Q6253.72 -1346 6158.72 -1335.5Q6063.72 -1325 5994.72 -1313Q5914.72 -1298 5851.72 -1280L5880.72 -1442Q5892.72 -1441 5916.72 -1440.0Q5940.72 -1439 5970.22 -1438.0Q5999.72 -1437 6032.22 -1436.5Q6064.72 -1436 6093.72 -1435.5Q6122.72 -1435 6145.22 -1434.5Q6167.72 -1434 6177.72 -1434H6748.72Q6758.72 -1434 6781.22 -1434.5Q6803.72 -1435 6832.72 -1435.5Q6861.72 -1436 6894.22 -1436.5Q6926.72 -1437 6956.22 -1438.0Q6985.72 -1439 7009.72 -1440.0Q7033.72 -1441 7045.72 -1442L7074.72 -1280Q7010.72 -1298 6930.72 -1313Q6861.72 -1325 6766.72 -1335.5Q6671.72 -1346 6553.72 -1346V-391Q6553.72 -306 6556.22 -242.5Q6558.72 -179 6562.22 -133.0Q6565.72 -87 6571.22 -56.0Q6576.72 -25 6582.72 -4V0H6343.72V-4Q6349.72 -25 6354.72 -56.0Q6359.72 -87 6363.72 -133.0Q6367.72 -179 6369.72 -242.5Q6371.72 -306 6371.72 -391Z M8537.400000000001 0V-4Q8539.400000000001 -9 8540.400000000001 -19.0Q8541.400000000001 -29 8541.400000000001 -37Q8541.400000000001 -68 8532.900000000001 -105.5Q8524.400000000001 -143 8500.400000000001 -199L8379.400000000001 -471Q8323.400000000001 -473 8230.400000000001 -473.0Q8137.400000000001 -473 8029.400000000001 -473Q7950.400000000001 -473 7876.900000000001 -473.0Q7803.400000000001 -473 7744.400000000001 -471L7629.400000000001 -207Q7614.400000000001 -170 7597.400000000001 -126.0Q7580.400000000001 -82 7580.400000000001 -37Q7580.400000000001 -24 7582.400000000001 -15.5Q7584.400000000001 -7 7586.400000000001 -4V0H7382.400000000001V-4Q7400.400000000001 -23 7427.400000000001 -71.5Q7454.400000000001 -120 7486.400000000001 -193L8059.400000000001 -1464H8139.400000000001L8682.400000000001 -242Q8701.400000000001 -199 8721.900000000001 -158.5Q8742.400000000001 -118 8760.400000000001 -86.0Q8778.400000000001 -54 8792.400000000001 -32.0Q8806.400000000001 -10 8811.400000000001 -4V0ZM7889.400000000001 -559Q7947.400000000001 -559 8008.400000000001 -559.5Q8069.400000000001 -560 8127.900000000001 -560.5Q8186.400000000001 -561 8240.400000000001 -561.5Q8294.400000000001 -562 8338.400000000001 -563L8057.400000000001 -1198L7781.400000000001 -559Z"/></g></g></svg>
+
+</section>
+</main>
 <script>
 // keep this in step with cli/src/manifest.rs. the fingerprint must match byte for byte.
 const MICRO = 1000000n;
@@ -497,6 +621,11 @@ $("file").addEventListener("change", async e => {
 });
 const params = new URLSearchParams(location.hash.slice(1));
 if (params.get("root")) { $("expected").value = params.get("root"); $("cmp-box").hidden = false; }
+
+// nav gets a hairline once the page scrolls
+const nav = document.getElementById("nav");
+const onScroll = () => nav.classList.toggle("scrolled", scrollY > 8);
+addEventListener("scroll", onScroll, { passive: true }); onScroll();
 </script>
 </body>
 </html>
