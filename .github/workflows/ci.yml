@@ -20,13 +20,20 @@ jobs:
           workspaces: template
       - name: build wasm
         run: cargo build --target wasm32-unknown-unknown --release
+      - name: shrink wasm
+        run: |
+          npm install -g binaryen
+          RAW=target/wasm32-unknown-unknown/release/tacita.wasm
+          mkdir -p out
+          wasm-opt -Oz --strip-debug --strip-producers "$RAW" -o out/tacita.wasm
+          echo "raw: $(stat -c %s "$RAW") bytes, optimised: $(stat -c %s out/tacita.wasm) bytes" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: test
         run: cargo test
       - name: upload wasm
         uses: actions/upload-artifact@v4
         with:
           name: tacita-template-wasm
-          path: template/target/wasm32-unknown-unknown/release/tacita.wasm
+          path: template/out/tacita.wasm
 
   cli:
     runs-on: ubuntu-latest

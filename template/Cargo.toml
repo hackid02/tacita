@@ -15,8 +15,10 @@ tari_template_test_tooling = "=0.55.0"
 crate-type = ["cdylib", "rlib"]
 
 [profile.release]
-opt-level = "s"
+opt-level = "z"
 lto = true
 codegen-units = 1
 panic = "abort"
-strip = "debuginfo"
+strip = true
+overflow-checks = false
+debug = false
