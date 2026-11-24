@@ -1,3 +1,4 @@
+mod fund;
 mod manifest;
 mod payout;
 mod tx;
@@ -32,6 +33,8 @@ usage:
       pay every winner from the campaign in one transaction, amounts hidden
   tacita close --campaign <component address>
       return anything left in the campaign to your account
+  tacita fund --amount <TARI>
+      move hidden TARI into your account's revealed balance (campaigns and fees use revealed funds)
 
 options:
   --account <component address>   which account pays and owns (default: your default account)
@@ -137,15 +140,20 @@ fn account(opts: &Opts, w: Option<&walletd::Walletd>) -> Result<ComponentAddress
     parse_component(addr)
 }
 
+fn submit_request(account: ComponentAddress, instructions: Value, max_fee: u64) -> Value {
+    json!({
+        "instructions": instructions,
+        "fee_account": account.to_string(),
+        "max_fee": max_fee,
+    })
+}
+
 fn submit(w: &walletd::Walletd, account: ComponentAddress, instructions: Value, max_fee: u64) -> Result<Value, String> {
-    let sent = w.call(
-        "transactions.submit_instruction",
-        json!({
-            "instructions": instructions,
-            "fee_account": account.to_string(),
-            "max_fee": max_fee,
-        }),
-    )?;
+    let sent = w.call("transactions.submit_instruction", submit_request(account, instructions, max_fee))?;
+    wait(w, sent)
+}
+
+fn wait(w: &walletd::Walletd, sent: Value) -> Result<Value, String> {
     let id = sent["transaction_id"].clone();
     println!("sent. transaction id: {}", id.as_str().unwrap_or(&id.to_string()));
     println!("waiting for the network (up to 2 minutes)...");
@@ -273,6 +281,33 @@ fn pay(opts: &Opts) -> Result<(), String> {
     Ok(())
 }
 
+fn fund(opts: &Opts) -> Result<(), String> {
+    let micro = manifest::parse_tari(opts.need("amount")?)?;
+    if micro == 0 {
+        return Err("--amount must be above 0".into());
+    }
+    let w = walletd();
+    let list = w.call("accounts.list", json!({ "offset": 0, "limit": 50 }))?;
+    let accounts = list["accounts"].as_array().cloned().unwrap_or_default();
+    let pick = match opts.flags.get("account") {
+        Some(a) => accounts.iter().find(|x| x["account"]["component_address"].as_str() == Some(a.as_str())),
+        None => accounts.iter().find(|x| x["account"]["is_default"].as_bool() == Some(true)).or_else(|| accounts.first()),
+    }
+    .ok_or("could not find that account in the wallet")?;
+    let account = pick["account"]["component_address"].as_str().ok_or("account has no address")?;
+    let own = pick["address"].as_str().ok_or("could not read the account's ootle address")?;
+    println!("moving {} TARI from hidden to revealed in {account}", fmt_tari(micro));
+    let req = fund::request(account, own, micro, opts.max_fee()?);
+    if opts.dry_run {
+        println!("{}", serde_json::to_string_pretty(&req).unwrap());
+        return Ok(());
+    }
+    let sent = w.call("accounts.stealth_transfer", req)?;
+    wait(&w, sent)?;
+    println!("\ndone. run `tacita doctor` to see the new revealed balance.");
+    Ok(())
+}
+
 fn close(opts: &Opts) -> Result<(), String> {
     let campaign = parse_component(opts.need("campaign")?)?;
     let w = (!opts.dry_run).then(walletd);
@@ -295,10 +330,47 @@ fn main() {
         "create" => create(&opts),
         "pay" => pay(&opts),
         "close" => close(&opts),
+        "fund" => fund(&opts),
         _ => usage(),
     };
     if let Err(e) = result {
         eprintln!("error: {e}");
         std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use ootle_rs::{key_provider::PrivateKeyProvider, transaction::TransactionSigner};
+    use tari_ootle_walletd_client::types::CallInstructionRequest;
+
+    use super::*;
+
+    const ACCOUNT: &str = "component_5286446acff808c0fcad494ce7b74e19238b446b02394242328d974261d3fe36";
+    const TEMPLATE: &str = "template_7d80993c271e39f70577f4a9f63c667d415cc64cafba4465d3b96d6607a5bc46";
+
+    fn round_trips(v: Value) {
+        let parsed: CallInstructionRequest = serde_json::from_value(v.clone()).unwrap_or_else(|e| panic!("{e}\n{v:#}"));
+        assert!(!parsed.instructions.is_empty());
+    }
+
+    #[test]
+    fn the_wallet_accepts_create_close_and_pay() {
+        let account = ComponentAddress::from_str(ACCOUNT).unwrap();
+        let template = parse_template(TEMPLATE).unwrap();
+        round_trips(submit_request(account, tx::create(account, template, "round 1", Amount::from(1_500_000u64), 3, Hash32::zero()).unwrap(), DEFAULT_MAX_FEE));
+        round_trips(submit_request(account, tx::close(account, account).unwrap(), DEFAULT_MAX_FEE));
+
+        let lines: Vec<payout::Line> = (0..3)
+            .map(|i| payout::Line {
+                address: PrivateKeyProvider::random(Network::MainNet).address().clone(),
+                amount: std::num::NonZeroU64::new(500_000 + i).unwrap(),
+            })
+            .collect();
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let st = rt.block_on(payout::build_statement(&PrivateKeyProvider::random(Network::MainNet), &lines)).unwrap();
+        round_trips(submit_request(account, tx::pay(account, st).unwrap(), DEFAULT_MAX_FEE));
     }
 }
