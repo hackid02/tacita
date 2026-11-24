@@ -8,6 +8,13 @@ tacita is a tari ootle template for campaign and treasury payouts. each winner's
 >
 > work in progress for the tari november mvp build contest.
 
+## on mainnet
+
+| what | value |
+|---|---|
+| template (`Campaign`) | `template_7d80993c271e39f70577f4a9f63c667d415cc64cafba4465d3b96d6607a5bc46` |
+| publish transaction | `ddae0f5144abfd1b31fc3e30668493bde513cfd0832bf60c15870d8e5170c69f` (accepted, 24 nov 2026, fee 2.891809 TARI) |
+
 ## the rules `pay` enforces
 
 1. only the campaign owner can pay (checked through the transaction signer)
