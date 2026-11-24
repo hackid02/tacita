@@ -25,7 +25,12 @@ jobs:
           npm install -g binaryen
           RAW=target/wasm32-unknown-unknown/release/tacita.wasm
           mkdir -p out
-          wasm-opt -Oz --strip-debug --strip-producers "$RAW" -o out/tacita.wasm
+          # rust's stable wasm target uses these features; a full strip drops the section that lists them
+          FEATURES="--enable-bulk-memory --enable-sign-ext --enable-nontrapping-float-to-int --enable-mutable-globals --enable-multivalue --enable-reference-types"
+          if ! wasm-opt -Oz $FEATURES --strip-debug --strip-producers "$RAW" -o out/tacita.wasm; then
+            echo "wasm-opt failed, shipping the size-built wasm without it" | tee -a "$GITHUB_STEP_SUMMARY"
+            cp "$RAW" out/tacita.wasm
+          fi
           echo "raw: $(stat -c %s "$RAW") bytes, optimised: $(stat -c %s out/tacita.wasm) bytes" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: test
         run: cargo test
