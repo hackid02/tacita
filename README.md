@@ -2,11 +2,13 @@
 
 pay people privately, and still prove every token.
 
-tacita is a tari ootle template for campaign and treasury payouts. each winner's amount stays hidden, the contract enforces that the full announced total goes to exactly the announced number of people, each winner can prove their own line, and an auditor file lets a reviewer check every line against the chain.
+tacita is a tari ootle template and command line tool for bounty and ambassador payouts. each winner's amount stays hidden, and the contract enforces that the locked total goes to exactly the locked number of people, in one transaction. a sha-256 fingerprint of the winners list is locked on chain before payout, so anyone holding the list can check it wasn't changed afterwards.
+
+**what it does not do (yet):** the contract can't see hidden amounts, so it does not check that each winner got the amount on the list, only the count and the total. checking the fingerprint today needs the whole list.
 
 > named after tacita, the roman goddess of silence. the amounts are never said, the total is always proven.
 >
-> work in progress for the tari november mvp build contest.
+> built for the tari november mvp build contest. status: template published on mainnet; no campaign has been paid yet.
 
 ## on mainnet
 
